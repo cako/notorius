@@ -31,6 +31,7 @@ class DocumentWidget(QtGui.QWidget):
         self.Image = None
         self.num_pages = None
         self.ImgLabel = QtGui.QLabel()
+        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.ImgPixmap = QtGui.QPixmap()
         # -1 fits height, -2 fits width
         self.scale = 1
@@ -62,8 +63,6 @@ class DocumentWidget(QtGui.QWidget):
         self.Image = self.CurrentPage.renderToImage(DPI_X*self.scale,
                                                     DPI_Y*self.scale)
         self.ImgLabel.setPixmap(self.ImgPixmap.fromImage(self.Image))
-        padding = (self.theparent.size().width() - self.Image.size().width())/2
-        self.theparent.move(padding, 0)
 
     def load_document(self, document):
         self.Document = popplerqt4.Poppler.Document.load(document)
