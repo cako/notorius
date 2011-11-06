@@ -13,12 +13,11 @@ __init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__
 __init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__(self, parent=None):$/;"	m	class:MainWindow
 change_page	/home/cako/Programming/python/notorius/src/window.py	/^    def change_page(self, event):$/;"	m	class:DocumentWidget
 load_document	/home/cako/Programming/python/notorius/src/window.py	/^    def load_document(self, document):$/;"	m	class:DocumentWidget
-mouseMoveEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mouseMoveEvent(self, event):$/;"	m	class:DocumentWidget
-mousePressEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mousePressEvent(self, event):$/;"	m	class:DocumentWidget
-mouseReleaseEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mouseReleaseEvent(self, event):$/;"	m	class:DocumentWidget
 paintEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def paintEvent(self, event):$/;"	m	class:DocumentWidget
 retranslateUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def retranslateUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
-setScale	/home/cako/Programming/python/notorius/src/window.py	/^    def setScale(self, event):$/;"	m	class:DocumentWidget
+set_scale	/home/cako/Programming/python/notorius/src/window.py	/^    def set_scale(self, event):$/;"	m	class:DocumentWidget
 setupUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def setupUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
+slot_next_pageSpinBox	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_next_pageSpinBox(self):$/;"	m	class:MainWindow
 slot_open	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_open(self):$/;"	m	class:MainWindow
+slot_prev_pageSpinBox	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_prev_pageSpinBox(self):$/;"	m	class:MainWindow
 slot_quit	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_quit(self):$/;"	m	class:MainWindow

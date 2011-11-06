@@ -97,9 +97,32 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="previousPageButton">
+       <property name="text">
+        <string>Previous page</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QSpinBox" name="pageSpinBox">
        <property name="enabled">
         <bool>true</bool>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+       <property name="accelerated">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="nextPageButton">
+       <property name="text">
+        <string>Next page</string>
        </property>
       </widget>
      </item>
@@ -118,6 +141,9 @@
      </item>
      <item>
       <widget class="QLabel" name="searchLabel">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>&amp;Search for:</string>
        </property>
@@ -132,31 +158,34 @@
      <item>
       <widget class="QLineEdit" name="searchLineEdit">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="previousButton">
-       <property name="text">
-        <string>Previous</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="nextButton">
+      <widget class="QPushButton" name="previousFindButton">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="text">
-        <string>Next</string>
+        <string>Find previous</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="nextFindButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Find next</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="clearButton">
        <property name="enabled">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="text">
         <string>&amp;Clear</string>

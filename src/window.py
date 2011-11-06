@@ -40,7 +40,6 @@ class DocumentWidget(QtGui.QWidget):
                 painter.drawImage(draw_image_rect, self.Image)
             else:
                 print 'Not yet implemented!'
-        print 'paint current page'
         painter.end()
 
     def set_scale(self, event):
@@ -56,12 +55,11 @@ class DocumentWidget(QtGui.QWidget):
         self.update()
 
     def change_page(self, event):
-        print event
-        event = int(event)
-        self.CurrentPage = self.Document.page( (event-1)%self.num_pages )
-        self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
-                                                    self.CurrentPage.Rotate0)
-        self.update()
+        if self.Document:
+            self.CurrentPage = self.Document.page( (event-1)%self.num_pages )
+            self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
+                                                        self.CurrentPage.Rotate0)
+            self.update()
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -81,9 +79,16 @@ class MainWindow(QtGui.QMainWindow):
         self.documentWidget.setGeometry(QtCore.QRect(0, 0, 916, 335))
         self.gridLayout_3.addWidget(self.documentWidget, 0, 0, 1, 1)
 
+        # Default values for spinboxes
         self.pageSpinBox.setValue(1)
+        self.scaleSpinBox.setValue(-2.00)
+
         # Connections
-        self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
+        self.connect(self.previousPageButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_prev_pageSpinBox)
+        self.connect(self.nextPageButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_next_pageSpinBox)
+        self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
                      self.documentWidget.change_page)
         self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
                     self.documentWidget.set_scale)
@@ -101,3 +106,9 @@ class MainWindow(QtGui.QMainWindow):
     def slot_quit(self):
         """ Slot for actionQuit. """
         self.close()
+
+    def slot_prev_pageSpinBox(self):
+        self.pageSpinBox.setValue(self.pageSpinBox.value() - 1)
+
+    def slot_next_pageSpinBox(self):
+        self.pageSpinBox.setValue(self.pageSpinBox.value() + 1)
