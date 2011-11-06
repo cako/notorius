@@ -7,13 +7,18 @@
 APP	/home/cako/Programming/python/notorius/src/main.py	/^    APP = QtGui.QApplication(sys.argv)$/;"	v
 DocumentWidget	/home/cako/Programming/python/notorius/src/window.py	/^class DocumentWidget(QtGui.QWidget):$/;"	c
 MainWindow	/home/cako/Programming/python/notorius/src/window.py	/^class MainWindow(QtGui.QMainWindow):$/;"	c
+PLATFORM	/home/cako/Programming/python/notorius/src/window.py	/^PLATFORM = platform.system()$/;"	v
 Ui_MainWindow	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^class Ui_MainWindow(object):$/;"	c
 WINDOW	/home/cako/Programming/python/notorius/src/main.py	/^    WINDOW = window.MainWindow()$/;"	v
 __init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__(self, parent = None):$/;"	m	class:DocumentWidget
 __init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__(self, parent=None):$/;"	m	class:MainWindow
 change_page	/home/cako/Programming/python/notorius/src/window.py	/^    def change_page(self, event):$/;"	m	class:DocumentWidget
+fit_to_width_or_height	/home/cako/Programming/python/notorius/src/window.py	/^    def fit_to_width_or_height(self, event):$/;"	m	class:DocumentWidget
 load_document	/home/cako/Programming/python/notorius/src/window.py	/^    def load_document(self, document):$/;"	m	class:DocumentWidget
-paintEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def paintEvent(self, event):$/;"	m	class:DocumentWidget
+output	/home/cako/Programming/python/notorius/src/window.py	/^    output = proc2.communicate()[0]$/;"	v
+proc1	/home/cako/Programming/python/notorius/src/window.py	/^    proc1 = subprocess.Popen(['xdpyinfo'], stdout=subprocess.PIPE)$/;"	v
+proc2	/home/cako/Programming/python/notorius/src/window.py	/^    proc2 = subprocess.Popen(["grep", "dots"], stdin=proc1.stdout,$/;"	v
+res	/home/cako/Programming/python/notorius/src/window.py	/^    res = output.strip().split()[1]$/;"	v
 retranslateUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def retranslateUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
 set_scale	/home/cako/Programming/python/notorius/src/window.py	/^    def set_scale(self, event):$/;"	m	class:DocumentWidget
 setupUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def setupUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
@@ -21,3 +26,5 @@ slot_next_pageSpinBox	/home/cako/Programming/python/notorius/src/window.py	/^   
 slot_open	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_open(self):$/;"	m	class:MainWindow
 slot_prev_pageSpinBox	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_prev_pageSpinBox(self):$/;"	m	class:MainWindow
 slot_quit	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_quit(self):$/;"	m	class:MainWindow
+slot_scaleComboBox	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_scaleComboBox(self, event):$/;"	m	class:MainWindow
+stdout	/home/cako/Programming/python/notorius/src/window.py	/^                                               stdout=subprocess.PIPE)$/;"	v

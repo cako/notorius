@@ -6,41 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>987</width>
-    <height>836</height>
+    <width>1024</width>
+    <height>826</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QScrollArea" name="scrollArea">
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>967</width>
-         <height>449</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3"/>
-      </widget>
-     </widget>
-    </item>
-   </layout>
+   <layout class="QGridLayout" name="gridLayout"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>987</width>
+     <width>1024</width>
      <height>26</height>
     </rect>
    </property>
@@ -87,17 +68,13 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="pageLabel">
-       <property name="text">
-        <string>&amp;Page:</string>
-       </property>
-       <property name="buddy">
-        <cstring>pageSpinBox</cstring>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="previousPageButton">
+       <property name="maximumSize">
+        <size>
+         <width>98</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Previous page</string>
        </property>
@@ -117,10 +94,35 @@
        <property name="accelerated">
         <bool>false</bool>
        </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="maxPageLabel">
+       <property name="text">
+        <string>/ 1</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="nextPageButton">
+       <property name="minimumSize">
+        <size>
+         <width>98</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>98</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Next page</string>
        </property>
@@ -140,18 +142,18 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="searchLabel">
+      <widget class="QPushButton" name="previousFindButton">
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="maximumSize">
+        <size>
+         <width>95</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
-        <string>&amp;Search for:</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::AutoText</enum>
-       </property>
-       <property name="buddy">
-        <cstring>searchLineEdit</cstring>
+        <string>Find previous</string>
        </property>
       </widget>
      </item>
@@ -160,15 +162,11 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="previousFindButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Find previous</string>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
        </property>
       </widget>
      </item>
@@ -176,6 +174,12 @@
       <widget class="QPushButton" name="nextFindButton">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>95</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="text">
         <string>Find next</string>
@@ -186,6 +190,12 @@
       <widget class="QPushButton" name="clearButton">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>45</width>
+         <height>16777215</height>
+        </size>
        </property>
        <property name="text">
         <string>&amp;Clear</string>
@@ -208,7 +218,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Scale document:</string>
+        <string>Scale:</string>
        </property>
        <property name="buddy">
         <cstring>scaleComboBox</cstring>
@@ -221,14 +231,48 @@
         <set>Qt::ImhFormattedNumbersOnly</set>
        </property>
        <property name="minimum">
-        <double>-2.000000000000000</double>
+        <double>0.000000000000000</double>
        </property>
        <property name="maximum">
         <double>100.000000000000000</double>
        </property>
+       <property name="singleStep">
+        <double>0.500000000000000</double>
+       </property>
        <property name="value">
         <double>1.000000000000000</double>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="scaleComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>102</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>78</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>Use scale</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Fit to width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Fit to height</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
