@@ -4,6 +4,11 @@ README
 Introduction
 ------------
 
+Introducing notorius!
+
+![notorius][img1]
+
+[img1]: http://i.imgur.com/58pDA.png
 Annotating PDF files is hard. There are a few
 options, but none of them are good enough for the
 technically inclined. Most PDF annotators use either
@@ -31,3 +36,5 @@ Requirements
 Installation
 ------------
 Once you've got the python libraries, simply run main.py.
+
+[img1]: http://i.imgur.com/7C5oJ.png
