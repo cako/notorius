@@ -1,0 +1,2 @@
+map <F2> ;w<CR><Esc>;!./main.py<CR>
+imap <F2> ;w<CR><Esc>;!./main.py<CR>
