@@ -1,0 +1,24 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+APP	/home/cako/Programming/python/notorius/src/main.py	/^    APP = QtGui.QApplication(sys.argv)$/;"	v
+DocumentWidget	/home/cako/Programming/python/notorius/src/window.py	/^class DocumentWidget(QtGui.QWidget):$/;"	c
+MainWindow	/home/cako/Programming/python/notorius/src/window.py	/^class MainWindow(QtGui.QMainWindow):$/;"	c
+Ui_MainWindow	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^class Ui_MainWindow(object):$/;"	c
+WINDOW	/home/cako/Programming/python/notorius/src/main.py	/^    WINDOW = window.MainWindow()$/;"	v
+__init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__(self, parent = None):$/;"	m	class:DocumentWidget
+__init__	/home/cako/Programming/python/notorius/src/window.py	/^    def __init__(self, parent=None):$/;"	m	class:MainWindow
+change_page	/home/cako/Programming/python/notorius/src/window.py	/^    def change_page(self, event):$/;"	m	class:DocumentWidget
+load_document	/home/cako/Programming/python/notorius/src/window.py	/^    def load_document(self, document):$/;"	m	class:DocumentWidget
+mouseMoveEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mouseMoveEvent(self, event):$/;"	m	class:DocumentWidget
+mousePressEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mousePressEvent(self, event):$/;"	m	class:DocumentWidget
+mouseReleaseEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def mouseReleaseEvent(self, event):$/;"	m	class:DocumentWidget
+paintEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def paintEvent(self, event):$/;"	m	class:DocumentWidget
+retranslateUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def retranslateUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
+setScale	/home/cako/Programming/python/notorius/src/window.py	/^    def setScale(self, event):$/;"	m	class:DocumentWidget
+setupUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def setupUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
+slot_open	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_open(self):$/;"	m	class:MainWindow
+slot_quit	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_quit(self):$/;"	m	class:MainWindow

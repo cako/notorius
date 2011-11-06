@@ -3,7 +3,6 @@
 """ Window. """
 
 import sys
-import poppler
 import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
 
@@ -26,11 +25,9 @@ class DocumentWidget(QtGui.QWidget):
         painter = QtGui.QPainter()
         painter.begin(self)
         #painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        #white_brush = QtGui.QBrush(QtCore.Qt.white)
-        #black_brush = QtGui.QBrush(QtCore.Qt.black)
-        #red_palette = QtGui.QPalette(QtCore.Qt.red)
-        #self.setAutoFillBackground(True)
-        #self.setPalette(red_palette)
+        #painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        #painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         if self.Image:
             page_qsizef = self.CurrentPage.pageSizeF()
             ratio = page_qsizef.height()/page_qsizef.width()
@@ -43,39 +40,27 @@ class DocumentWidget(QtGui.QWidget):
                 painter.drawImage(draw_image_rect, self.Image)
             else:
                 print 'Not yet implemented!'
+        print 'paint current page'
         painter.end()
 
-
-    def mousePressEvent(self, event):
-        """ Repaints when mouse moves. """
-        self.click = True
-        self.update()
-
-    def mouseReleaseEvent(self, event):
-        """ Repaints when mouse moves. """
-        self.click = False
-        self.update()
-
-    def mouseMoveEvent(self, event):
-        """ Repaints when mouse moves. """
-        self.click = False
-        self.update()
-
-    def setScale(self, event):
+    def set_scale(self, event):
         self.scale = float(event)
+        self.update()
 
     def load_document(self, document):
         self.Document = popplerqt4.Poppler.Document.load(document)
         self.CurrentPage =  self.Document.page(0)
         self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
-                                                   self.CurrentPage.Rotate0)
+                                                    self.CurrentPage.Rotate0)
         self.num_pages = self.Document.numPages()
         self.update()
 
     def change_page(self, event):
-        self.CurrentPage = self.Document.page((event - 1)%self.num_pages)
+        print event
+        event = int(event)
+        self.CurrentPage = self.Document.page( (event-1)%self.num_pages )
         self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
-                                                   self.CurrentPage.Rotate0)
+                                                    self.CurrentPage.Rotate0)
         self.update()
 
 class MainWindow(QtGui.QMainWindow):
@@ -96,11 +81,12 @@ class MainWindow(QtGui.QMainWindow):
         self.documentWidget.setGeometry(QtCore.QRect(0, 0, 916, 335))
         self.gridLayout_3.addWidget(self.documentWidget, 0, 0, 1, 1)
 
+        self.pageSpinBox.setValue(1)
         # Connections
-        self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
+        self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
                      self.documentWidget.change_page)
         self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
-                    self.documentWidget.setScale)
+                    self.documentWidget.set_scale)
 
     def slot_open(self):
         """ Slot for actionQuit. """
