@@ -36,4 +36,4 @@ Installation
 ------------
 Once you've got the python libraries, simply run main.py.
 
-[img1]: http://i.imgur.com/7C5oJ.png
+[img1]: http://i.imgur.com/25Rix.png
