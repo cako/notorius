@@ -18,6 +18,8 @@ class DocumentWidget(QtGui.QWidget):
         self.CurrentPage = None
         self.Image = None
         self.num_pages = None
+        # -1 fits height, -2 fits width
+        self.scale = -1
 
     def paintEvent(self, event):
         """ Sets up a painter and paint with the help of Helper. """
@@ -33,10 +35,16 @@ class DocumentWidget(QtGui.QWidget):
             page_qsizef = self.CurrentPage.pageSizeF()
             ratio = page_qsizef.height()/page_qsizef.width()
             draw_image_rect = self.theparent.rect()
-            # This next line guarantees the Image is not distorted
-            draw_image_rect.setHeight(draw_image_rect.width()*ratio)
-            painter.drawImage(draw_image_rect, self.Image)
+            if self.scale == -1:
+                draw_image_rect.setWidth(draw_image_rect.height()/ratio)
+                painter.drawImage(draw_image_rect, self.Image)
+            elif self.scale == -2:
+                draw_image_rect.setHeight(draw_image_rect.width()*ratio)
+                painter.drawImage(draw_image_rect, self.Image)
+            else:
+                print 'Not yet implemented!'
         painter.end()
+
 
     def mousePressEvent(self, event):
         """ Repaints when mouse moves. """
@@ -52,6 +60,9 @@ class DocumentWidget(QtGui.QWidget):
         """ Repaints when mouse moves. """
         self.click = False
         self.update()
+
+    def setScale(self, event):
+        self.scale = float(event)
 
     def load_document(self, document):
         self.Document = popplerqt4.Poppler.Document.load(document)
@@ -85,12 +96,11 @@ class MainWindow(QtGui.QMainWindow):
         self.documentWidget.setGeometry(QtCore.QRect(0, 0, 916, 335))
         self.gridLayout_3.addWidget(self.documentWidget, 0, 0, 1, 1)
 
-        # Page spinbox widget
-        #self.pageSpinBox.setMinimum(1)
-
         # Connections
         self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
                      self.documentWidget.change_page)
+        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
+                    self.documentWidget.setScale)
 
     def slot_open(self):
         """ Slot for actionQuit. """

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1456</width>
-    <height>747</height>
+    <width>987</width>
+    <height>836</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1436</width>
-         <height>360</height>
+         <width>967</width>
+         <height>449</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_3"/>
@@ -40,7 +40,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1456</width>
+     <width>987</width>
      <height>26</height>
     </rect>
    </property>
@@ -187,9 +187,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox">
+      <widget class="QDoubleSpinBox" name="scaleSpinBox">
        <property name="inputMethodHints">
         <set>Qt::ImhFormattedNumbersOnly</set>
+       </property>
+       <property name="minimum">
+        <double>-2.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>100.000000000000000</double>
        </property>
        <property name="value">
         <double>1.000000000000000</double>
