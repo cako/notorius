@@ -17,6 +17,7 @@ class DocumentWidget(QtGui.QWidget):
         self.Document = None
         self.CurrentPage = None
         self.Image = None
+        self.num_pages = None
 
     def paintEvent(self, event):
         """ Sets up a painter and paint with the help of Helper. """
@@ -57,11 +58,11 @@ class DocumentWidget(QtGui.QWidget):
         self.CurrentPage =  self.Document.page(0)
         self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
                                                    self.CurrentPage.Rotate0)
+        self.num_pages = self.Document.numPages()
         self.update()
 
-    def change_page_size(self, event):
-        print event
-        self.CurrentPage = self.Document.page(event-1)
+    def change_page(self, event):
+        self.CurrentPage = self.Document.page((event - 1)%self.num_pages)
         self.Image = self.CurrentPage.renderToImage(300, 300, -1, -1, -1, -1,
                                                    self.CurrentPage.Rotate0)
         self.update()
@@ -85,11 +86,11 @@ class MainWindow(QtGui.QMainWindow):
         self.gridLayout_3.addWidget(self.documentWidget, 0, 0, 1, 1)
 
         # Page spinbox widget
-        self.pageSpinBox.setMinimum(1)
+        #self.pageSpinBox.setMinimum(1)
 
         # Connections
         self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
-                     self.documentWidget.change_page_size)
+                     self.documentWidget.change_page)
 
     def slot_open(self):
         """ Slot for actionQuit. """
@@ -97,6 +98,8 @@ class MainWindow(QtGui.QMainWindow):
         if filename:
             self.documentWidget.load_document(filename)
             self.pageSpinBox.setValue(1)
+            self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
+            self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
             self.statusBar().showMessage('Opened file to %s.' % filename)
 
     def slot_quit(self):

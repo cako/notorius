@@ -1,2 +1,4 @@
+silent !ctags -R -o %:p:h/tags %:p:h
+let &tags = expand("%:p:h") . "/tags"
 map <F2> ;w<CR><Esc>;!./main.py<CR>
 imap <F2> ;w<CR><Esc>;!./main.py<CR>
