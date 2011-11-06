@@ -8,7 +8,6 @@ Introducing notorius!
 
 ![notorius][img1]
 
-[img1]: http://i.imgur.com/58pDA.png
 Annotating PDF files is hard. There are a few
 options, but none of them are good enough for the
 technically inclined. Most PDF annotators use either
