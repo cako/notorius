@@ -323,10 +323,3 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         self.annotationWidget.remove_png()
-
-
-if __name__ == '__main__':
-    APP = QtGui.QApplication(sys.argv)
-    WINDOW = MainWindow()
-    WINDOW.show()
-    sys.exit(APP.exec_())

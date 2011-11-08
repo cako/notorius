@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'window.ui'
 #
-# Created: Mon Nov  7 23:07:17 2011
+# Created: Tue Nov  8 00:30:25 2011
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -95,7 +95,7 @@ class Ui_MainWindow(object):
         self.scaleSpinBox.setInputMethodHints(QtCore.Qt.ImhFormattedNumbersOnly)
         self.scaleSpinBox.setMinimum(0.0)
         self.scaleSpinBox.setMaximum(100.0)
-        self.scaleSpinBox.setSingleStep(0.5)
+        self.scaleSpinBox.setSingleStep(0.25)
         self.scaleSpinBox.setProperty("value", 1.0)
         self.scaleSpinBox.setObjectName("scaleSpinBox")
         self.horizontalLayout.addWidget(self.scaleSpinBox)
