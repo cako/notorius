@@ -216,7 +216,6 @@ class MainWindow(QtGui.QMainWindow):
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
         self.documentWidget.setObjectName("documentWidget")
-        self.documentWidget.setGeometry(QtCore.QRect(0, 0, 916, 335))
         self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.scrollArea.setWidget(self.documentWidget.ImgLabel)
 
@@ -233,14 +232,14 @@ class MainWindow(QtGui.QMainWindow):
                      QtCore.SIGNAL("currentIndexChanged(int)"),
                      self.slot_scale)
 
-        # Annotation PNG widget
+        # Scroll Widget for annotation
         self.scrollAreaAnnotation = QtGui.QScrollArea(self.annotationDockWidget)
         self.scrollAreaAnnotation.setWidgetResizable(True)
         self.scrollAreaAnnotation.setObjectName("scrollAreaAnnotation")
-        self.scrollAreaAnnotation.setGeometry(QtCore.QRect(0, 0, 300, 200))
         self.gridLayoutAnnotationDock.addWidget(self.scrollAreaAnnotation,
                                                 0, 0, 1, 1)
 
+        # Annotation PNG widget
         self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
                                                  WELCOME)
         self.annotationWidget.setObjectName("annotationWidget")
@@ -265,7 +264,7 @@ class MainWindow(QtGui.QMainWindow):
             self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
             self.scaleComboBox.setCurrentIndex(0)
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
-            self.statusBar().showMessage('Opened file to %s.' % filename)
+            self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_quit(self):
         """ Slot for actionQuit. """
@@ -324,3 +323,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         self.annotationWidget.remove_png()
+
+
+if __name__ == '__main__':
+    APP = QtGui.QApplication(sys.argv)
+    WINDOW = MainWindow()
+    WINDOW.show()
+    sys.exit(APP.exec_())
