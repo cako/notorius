@@ -2,10 +2,11 @@
 # -*- coding: UTF-8 -*-
 """ Window. """
 
-import platform
+import os
 import subprocess
 import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
+from platform import system as systemplat
 from random import randint
 
 WELCOME = u"""\\begin{center}
@@ -13,7 +14,7 @@ Hello and welcome to notorius!
 \end{center}
 \[ \int_\Omega\,dµ = µ(\Omega) \]"""
 
-PLATFORM = platform.system()
+PLATFORM = systemplat()
 if PLATFORM == 'Linux':
     PROC1 = subprocess.Popen(["xdpyinfo"], stdout=subprocess.PIPE)
     PROC2 = subprocess.Popen(["grep", "dots"], stdin=PROC1.stdout,
@@ -93,16 +94,10 @@ class AnnotationWidget(QtGui.QWidget):
                                         stdout=subprocess.PIPE)
     def remove_files(self):
         for ext in ["aux", "log", "dvi", "tex"]:
-            if PLATFORM == 'Linux':
-                trash_proc = subprocess.Popen(["rm",
-                                               self.filename.rstrip('tex')+ext],
-                                               stdout=subprocess.PIPE)
-    def remove_png(self):
-        if PLATFORM == 'Linux':
-            trash_proc = subprocess.Popen(["rm",
-                                           self.filename.rstrip('tex')+'png'],
-                                           stdout=subprocess.PIPE)
+            os.remove(self.filename.rstrip('tex')+ext)
 
+    def remove_png(self):
+        os.remove(self.filename.rstrip('tex')+'png')
 
 class DocumentWidget(QtGui.QWidget):
     """
