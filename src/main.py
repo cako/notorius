@@ -2,9 +2,9 @@
 # -*- coding: UTF-8 -*-
 """ Main. """
 
+import window
 import sys
 from PyQt4 import QtGui
-import window
 
 if __name__ == '__main__':
     APP = QtGui.QApplication(sys.argv)
