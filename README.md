@@ -25,7 +25,7 @@ attempt at doing so.
 
 The project is very much in its infancy, but key parts have already been
 implemented. So far it can open PDF files and generate annotations, but there
-is no integration between the two yet. There is also no way to keep track of
+is no integration between the two. There is also no way to keep track of
 annotations.
 
 Requirements
