@@ -1,8 +1,0 @@
-call GenerateTags()
-map <F2> ;w<CR><Esc>;!./main.py<CR>
-imap <F2> <Esc>;w<CR><Esc>;!./main.py<CR>
-
-function! GenerateTags()
-    silent !ctags -R -o %:p:h/tags %:p:h
-    let &tags = expand("%:p:h") . "/tags"
-endfunction
