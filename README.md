@@ -33,6 +33,8 @@ Requirements
 * python 2.6
 * pyqt4
 * python-popper-qt4
+* latex
+* dvipng
 
 Installation
 ------------

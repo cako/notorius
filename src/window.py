@@ -16,12 +16,15 @@ Hello and welcome to notorius!
 
 PLATFORM = systemplat()
 if PLATFORM == 'Linux':
-    PROC1 = subprocess.Popen(["xdpyinfo"], stdout=subprocess.PIPE)
-    PROC2 = subprocess.Popen(["grep", "dots"], stdin=PROC1.stdout,
-                                               stdout=subprocess.PIPE)
-    OUT = PROC2.communicate()[0]
-    DPI = OUT.strip().split()[1]
-    (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
+    try:
+        PROC1 = subprocess.Popen(["xdpyinfo"], stdout=subprocess.PIPE)
+        PROC2 = subprocess.Popen(["grep", "dots"], stdin=PROC1.stdout,
+                                                   stdout=subprocess.PIPE)
+        OUT = PROC2.communicate()[0]
+        DPI = OUT.strip().split()[1]
+        (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
+    except OSError:
+        DPI_X = DPI_X = 96
 else:
     DPI_X = DPI_X = 96
 
@@ -80,24 +83,30 @@ class AnnotationWidget(QtGui.QWidget):
         filehandle.close()
 
     def generate_dvi(self):
-        latex_proc = subprocess.call(["latex", "--interaction=nonstopmode",
-                                       self.filename], stdout=subprocess.PIPE)
+        try:
+            latex_proc = subprocess.call(["latex", "--interaction=nonstopmode",
+                                           self.filename], stdout=subprocess.PIPE)
+        except OSError:
+            print 'You do not have a LaTeX distribution!'
 
     def generate_png(self):
         filebase = self.filename.rstrip('tex')
         filename_dvi = filebase + 'dvi'
         filename_png = filebase + 'png'
         # Gotta learn how to use bbox on -T option
-        dvipng_proc = subprocess.call(["dvipng", "-x", "1500", "-Q", "17",
-                                        "-T", "tight", "--follow", "-o",
-                                        filename_png, filename_dvi],
-                                        stdout=subprocess.PIPE)
+        try:
+            dvipng_proc = subprocess.call(["dvipng", "-x", "1500", "-Q", "17",
+                                            "-T", "tight", "--follow", "-o",
+                                            filename_png, filename_dvi],
+                                            stdout=subprocess.PIPE)
+        except OSError:
+            print 'You do not have a dvipng distribution!'
     def remove_files(self):
         for ext in ["aux", "log", "dvi", "tex"]:
-            os.remove(self.filename.rstrip('tex')+ext)
+            os.remove(self.filename.rstrip('tex') + ext)
 
     def remove_png(self):
-        os.remove(self.filename.rstrip('tex')+'png')
+        os.remove(self.filename.rstrip('tex') + 'png')
 
 class DocumentWidget(QtGui.QWidget):
     """
