@@ -1,4 +1,6 @@
 nogit/
+tags
+.vim.custom
 *.swp
 *.swo
 *.pyc

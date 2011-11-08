@@ -26,10 +26,12 @@ generate_filename	/home/cako/Programming/python/notorius/src/window.py	/^    def
 generate_png	/home/cako/Programming/python/notorius/src/window.py	/^    def generate_png(self):$/;"	m	class:AnnotationWidget
 load_document	/home/cako/Programming/python/notorius/src/window.py	/^    def load_document(self, document):$/;"	m	class:DocumentWidget
 remove_files	/home/cako/Programming/python/notorius/src/window.py	/^    def remove_files(self):$/;"	m	class:AnnotationWidget
+remove_png	/home/cako/Programming/python/notorius/src/window.py	/^    def remove_png(self):$/;"	m	class:AnnotationWidget
 resizeEvent	/home/cako/Programming/python/notorius/src/window.py	/^    def resizeEvent(self, event):$/;"	m	class:MainWindow
 retranslateUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def retranslateUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
 set_scale	/home/cako/Programming/python/notorius/src/window.py	/^    def set_scale(self, event):$/;"	m	class:DocumentWidget
 setupUi	/home/cako/Programming/python/notorius/src/window_pyuic4.py	/^    def setupUi(self, MainWindow):$/;"	m	class:Ui_MainWindow
+slot_compile_annotation	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_compile_annotation(self):$/;"	m	class:MainWindow
 slot_hide_annotation	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_hide_annotation(self, event):$/;"	m	class:MainWindow
 slot_hide_annotation_source	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_hide_annotation_source(self, event):$/;"	m	class:MainWindow
 slot_hide_controls	/home/cako/Programming/python/notorius/src/window.py	/^    def slot_hide_controls(self, event):$/;"	m	class:MainWindow
