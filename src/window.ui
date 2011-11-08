@@ -257,7 +257,7 @@
         <double>100.000000000000000</double>
        </property>
        <property name="singleStep">
-        <double>0.500000000000000</double>
+        <double>0.250000000000000</double>
        </property>
        <property name="value">
         <double>1.000000000000000</double>
@@ -277,14 +277,14 @@
    <widget class="QWidget" name="dockWidgetContents_5">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="1" column="0">
-      <widget class="QTextEdit" name="textAnnotationSource"/>
+      <widget class="QTextEdit" name="annotationSourceTextEdit"/>
      </item>
      <item row="1" column="1">
       <widget class="QPushButton" name="compileButton">
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>0</height>
+         <height>97</height>
         </size>
        </property>
        <property name="maximumSize">

@@ -8,6 +8,11 @@ import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
 from random import randint
 
+WELCOME = u"""\\begin{center}
+Hello and welcome to notorius!
+\end{center}
+\[ \int_\Omega\,dµ = µ(\Omega) \]"""
+
 PLATFORM = platform.system()
 if PLATFORM == 'Linux':
     PROC1 = subprocess.Popen(["xdpyinfo"], stdout=subprocess.PIPE)
@@ -233,12 +238,7 @@ class MainWindow(QtGui.QMainWindow):
                                                 0, 0, 1, 1)
 
         self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
-                                                 u"""
-                                                 \\begin{center}
-                                                 Hello and welcome to notorius!
-                                                 \end{center}
-                                                 \[\int_\Omega\,dµ=µ(\Omega)\]
-                                                """)
+                                                 WELCOME)
         self.annotationWidget.setObjectName("annotationWidget")
 
         self.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
@@ -247,6 +247,10 @@ class MainWindow(QtGui.QMainWindow):
         # Connections for Annotation widget
         self.connect(self.compileButton, QtCore.SIGNAL("clicked()"),
                      self.slot_compile_annotation)
+
+        # Annotation Source Widget
+        self.annotationSourceTextEdit.setText(WELCOME)
+
     def slot_open(self):
         """ Slot for actionQuit. """
         filename = unicode(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
@@ -304,7 +308,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_compile_annotation(self):
         self.annotationWidget.remove_png()
-        text = unicode(self.textAnnotationSource.toPlainText())
+        text = unicode(self.annotationSourceTextEdit.toPlainText())
         self.annotationWidget.text = text
 
     def resizeEvent(self, event):
@@ -313,3 +317,6 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(1)
         elif self.scaleComboBox.currentIndex() == 2:
             self.documentWidget.fit_to_width_or_height(2)
+
+    def closeEvent(self, event):
+        self.annotationWidget.remove_png()

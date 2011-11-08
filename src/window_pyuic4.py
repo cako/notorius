@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'window.ui'
 #
-# Created: Mon Nov  7 22:38:55 2011
+# Created: Mon Nov  7 23:07:17 2011
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -107,11 +107,11 @@ class Ui_MainWindow(object):
         self.dockWidgetContents_5.setObjectName("dockWidgetContents_5")
         self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents_5)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.textAnnotationSource = QtGui.QTextEdit(self.dockWidgetContents_5)
-        self.textAnnotationSource.setObjectName("textAnnotationSource")
-        self.gridLayout_2.addWidget(self.textAnnotationSource, 1, 0, 1, 1)
+        self.annotationSourceTextEdit = QtGui.QTextEdit(self.dockWidgetContents_5)
+        self.annotationSourceTextEdit.setObjectName("annotationSourceTextEdit")
+        self.gridLayout_2.addWidget(self.annotationSourceTextEdit, 1, 0, 1, 1)
         self.compileButton = QtGui.QPushButton(self.dockWidgetContents_5)
-        self.compileButton.setMinimumSize(QtCore.QSize(0, 0))
+        self.compileButton.setMinimumSize(QtCore.QSize(0, 97))
         self.compileButton.setMaximumSize(QtCore.QSize(20, 16777215))
         self.compileButton.setObjectName("compileButton")
         self.gridLayout_2.addWidget(self.compileButton, 1, 1, 1, 1)

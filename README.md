@@ -23,8 +23,10 @@ I've written a couple of scripts (first
 to use. So I decided I'd write a full-blown PDF reader. This is my meager
 attempt at doing so.
 
-The project is very much in its infancy, and is only a skeleton so far.
-Absolutely nothing has been implemented yet.
+The project is very much in its infancy, but key parts have already been
+implemented. So far it can open PDF files and generate annotations, but there
+is no integration between the two yet. There is also no way to keep track of
+annotations.
 
 Requirements
 ------------
@@ -36,4 +38,4 @@ Installation
 ------------
 Once you've got the python libraries, simply run main.py.
 
-[img1]: http://i.imgur.com/25Rix.png
+[img1]: http://i.imgur.com/OSsXu.png
