@@ -116,16 +116,14 @@ class PackageDialog(QtGui.QDialog):
         print self.packages
         self.close()
 
-class AnnotationWidget(QtGui.QWidget):
+class Note(object):
     """
-    AnnotationWidget holds the compiled annotation.
+    Note handles the creation and compilation of notes.
     """
-    def __init__(self, parent = None, text = None, packages = None):
-        QtGui.QWidget.__init__(self, parent)
-        self.ParentWidget = parent
-        self.ImgLabel = QtGui.QLabel()
-        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
+    def __init__(self, text = None, packages = None, id=0):
         self.filename = self.generate_filename()
+        self.ImgPixmap = QtGui.QPixmap()
+        self.id = id
         if packages is None:
             self.packages = list(PACKAGES)
         else:
@@ -154,8 +152,7 @@ class AnnotationWidget(QtGui.QWidget):
         self.generate_dvi()
         self.generate_png()
         self.remove_files()
-        self.ImgPixmap = QtGui.QPixmap(self.filename.rstrip('tex') + 'png')
-        self.ImgLabel.setPixmap(self.ImgPixmap)
+        self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
 
     def generate_filename(self):
         exists = True
@@ -175,7 +172,6 @@ class AnnotationWidget(QtGui.QWidget):
         filehandle.close()
 
     def generate_dvi(self):
-        # Rubber python
         try:
             latex_proc = subprocess.call(["latex", "--interaction=nonstopmode",
                                            self.filename],
@@ -201,6 +197,21 @@ class AnnotationWidget(QtGui.QWidget):
 
     def remove_png(self):
         os.remove(self.filename.rstrip('tex') + 'png')
+
+class AnnotationWidget(QtGui.QWidget):
+    """
+    AnnotationWidget holds the compiled annotation.
+    """
+    def __init__(self, parent = None, ImgPixmap = None):
+        """ Initialize DocumentWidget. """
+        QtGui.QWidget.__init__(self, parent)
+        self.ImgLabel = QtGui.QLabel()
+        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
+        if ImgPixmap is None:
+            self.ImgPixmap = QtGui.QPixmap()
+        else:
+            self.ImgPixmap = ImgPixmap
+        self.ImgLabel.setPixmap(self.ImgPixmap)
 
 class DocumentWidget(QtGui.QWidget):
     """
@@ -333,9 +344,12 @@ class MainWindow(QtGui.QMainWindow):
         self.gridLayoutAnnotationDock.addWidget(self.scrollAreaAnnotation,
                                                 0, 0, 1, 1)
 
+        # Beginning note
+        self.current_note = Note(WELCOME)
+
         # Annotation PNG widget
         self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
-                                                 WELCOME)
+                                                 self.current_note.ImgPixmap)
         self.annotationWidget.setObjectName("annotationWidget")
 
         self.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
@@ -404,9 +418,14 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(event)
 
     def slot_compile_annotation(self):
-        self.annotationWidget.remove_png()
+        """
+        Slot to compile the current annotation by changing annotationWidget's
+        ImgLabel's Pixmap to the updated one.
+        """
+        self.current_note.remove_png()
         text = unicode(self.annotationSourceTextEdit.toPlainText())
-        self.annotationWidget.text = text
+        self.current_note.text = text
+        self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
@@ -416,4 +435,4 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(2)
 
     def closeEvent(self, event):
-        self.annotationWidget.remove_png()
+        self.current_note.remove_png()
