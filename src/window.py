@@ -125,9 +125,9 @@ class Note(object):
         self.ImgPixmap = QtGui.QPixmap()
         self.id = id
         if packages is None:
-            self.packages = list(PACKAGES)
+            self._packages = list(PACKAGES)
         else:
-            self.packages = packages
+            self._packages = packages
         self._text = text
         if text is not None:
             self.text = text
@@ -138,21 +138,15 @@ class Note(object):
     @text.setter
     def text(self, text):
         self._text = text
-        tex_source  = '\documentclass[12pt,a4paper]{article}'+ "\n"
-        tex_source += '\usepackage[portuguese]{babel}' + "\n"
-        tex_source += '\usepackage[utf8x]{inputenc}' + "\n"
-        tex_source += '\usepackage{tikz}' + "\n"
-        tex_source += '\usepackage{amsmath, amssymb, amsfonts}' + "\n"
-        tex_source += '\pagestyle{empty}' + "\n"
-        tex_source += "\\begin{document}\n"
-        tex_source += text
-        tex_source += "\n"+ '\end{document}'
-        self.tex_source = tex_source
-        self.generate_file()
-        self.generate_dvi()
-        self.generate_png()
-        self.remove_files()
-        self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
+        self.update()
+
+    @property
+    def packages(self):
+        return self._packages
+    @packages.setter
+    def packages(self, packages):
+        self._packages = packages
+        self.update()
 
     def generate_filename(self):
         exists = True
@@ -191,12 +185,40 @@ class Note(object):
                                             stdout=subprocess.PIPE)
         except OSError:
             print 'You do not have a dvipng distribution!'
+
+    def generate_source(self):
+        tex_source  = '\documentclass[12pt,a4paper]{article}'+ "\n"
+        for dic in self.packages:
+            package = dic.keys()[0]
+            try:
+                line = '\usepackage['
+                for options in dic[package][:-1]:
+                    line += options + ','
+                line += dic[package][-1] + ']'
+            except IndexError:
+                line = '\usepackage'
+            line += '{' + package + "}\n"
+            tex_source += line
+        tex_source += '\pagestyle{empty}' + "\n"
+        tex_source += "\\begin{document}\n"
+        tex_source += self.text
+        tex_source += "\n"+ '\end{document}'
+        self.tex_source = tex_source
+
     def remove_files(self):
         for ext in ["aux", "log", "dvi", "tex"]:
             os.remove(self.filename.rstrip('tex') + ext)
 
     def remove_png(self):
         os.remove(self.filename.rstrip('tex') + 'png')
+
+    def update(self):
+        self.generate_source()
+        self.generate_file()
+        self.generate_dvi()
+        self.generate_png()
+        self.remove_files()
+        self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
 
 class AnnotationWidget(QtGui.QWidget):
     """
