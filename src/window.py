@@ -14,6 +14,14 @@ Hello and welcome to notorius!
 \end{center}
 \[ \int_\Omega\,dµ = µ(\Omega) \]"""
 
+
+PACKAGES = [{u'babel' : [u'portuguese']},
+            {u'inputenc' : ['utf8x']},
+            {u'tikz' : []},
+            {u'amsmath' : []},
+            {u'amssymb' : []},
+            {u'amsfonts' : []}]
+
 PLATFORM = systemplat()
 if PLATFORM == 'Linux':
     try:
@@ -28,16 +36,100 @@ if PLATFORM == 'Linux':
 else:
     DPI_X = DPI_X = 96
 
+class PackageDialog(QtGui.QDialog):
+    """
+    PackageDialog allows for editing of packages
+    """
+    def __init__(self, parent = None, packages = None):
+        QtGui.QDialog.__init__(self, parent)
+        uic.loadUi('package_dialog.ui', self)
+        if packages is None:
+            self.packages = list(PACKAGES)
+        else:
+            self.packages = packages
+        self.packages_backup = list(self.packages)
+        for dic in self.packages:
+            self.packageList.addItem(dic.keys()[0])
+
+        self.connect(self.packageList,
+        QtCore.SIGNAL("currentRowChanged(int)"),
+                     self.slot_click_package)
+
+        self.connect(self.addPackageButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_add_package)
+
+        self.connect(self.removePackageButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_remove_package)
+
+        self.connect(self.addOptionButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_add_option)
+
+        self.connect(self.removeOptionButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_remove_option)
+
+        self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_cancel)
+
+        self.connect(self.saveButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_save)
+
+    def slot_add_package(self):
+        package = unicode(self.packagePlainText.toPlainText())
+        self.packageList.addItem(package)
+        self.packages += [{package : []}]
+        self.packagePlainText.clear()
+
+    def slot_remove_package(self):
+        package_index = self.packageList.currentRow()
+        del self.packages[package_index]
+        self.packageList.takeItem(package_index)
+
+    def slot_add_option(self):
+        option = self.optionPlainText.toPlainText()
+        self.optionList.addItem(option)
+        package_index = self.packageList.currentRow()
+        package = unicode(self.packageList.item(package_index).text())
+        self.packages[package_index][package] += [unicode(option)]
+        print self.packages
+        self.optionPlainText.clear()
+
+    def slot_remove_option(self):
+        package_index = self.packageList.currentRow()
+        package = unicode(self.packageList.item(package_index).text())
+        option_index = self.optionList.currentRow()
+        del self.packages[package_index][package][option_index]
+        self.optionList.takeItem(option_index)
+
+    def slot_click_package(self, event):
+        for i in xrange(0, self.optionList.count()):
+            self.optionList.takeItem(i)
+        self.optionList.clear()
+        dic = self.packages[event]
+        for options in dic[dic.keys()[0]]:
+            self.optionList.addItem(options)
+
+    def slot_cancel(self):
+        self.packages = list(self.packages_backup)
+        self.close()
+
+    def slot_save(self):
+        print self.packages
+        self.close()
+
 class AnnotationWidget(QtGui.QWidget):
     """
     AnnotationWidget holds the compiled annotation.
     """
-    def __init__(self, parent = None, text = None):
+    def __init__(self, parent = None, text = None, packages = None):
         QtGui.QWidget.__init__(self, parent)
         self.ParentWidget = parent
         self.ImgLabel = QtGui.QLabel()
         self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.filename = self.generate_filename()
+        if packages is None:
+            self.packages = list(PACKAGES)
+        else:
+            self.packages = packages
         self._text = text
         if text is not None:
             self.text = text
@@ -51,7 +143,7 @@ class AnnotationWidget(QtGui.QWidget):
         tex_source  = '\documentclass[12pt,a4paper]{article}'+ "\n"
         tex_source += '\usepackage[portuguese]{babel}' + "\n"
         tex_source += '\usepackage[utf8x]{inputenc}' + "\n"
-        tex_source += '\usepackage{a4wide}' + "\n"
+        tex_source += '\usepackage{tikz}' + "\n"
         tex_source += '\usepackage{amsmath, amssymb, amsfonts}' + "\n"
         tex_source += '\pagestyle{empty}' + "\n"
         tex_source += "\\begin{document}\n"
@@ -83,9 +175,11 @@ class AnnotationWidget(QtGui.QWidget):
         filehandle.close()
 
     def generate_dvi(self):
+        # Rubber python
         try:
             latex_proc = subprocess.call(["latex", "--interaction=nonstopmode",
-                                           self.filename], stdout=subprocess.PIPE)
+                                           self.filename],
+                                           stdout=subprocess.PIPE)
         except OSError:
             print 'You do not have a LaTeX distribution!'
 
@@ -184,7 +278,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_open)
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
-                     self.slot_quit)
+                     self.close)
 
         # Windows menu
         self.connect(self.actionControls,
@@ -254,6 +348,11 @@ class MainWindow(QtGui.QMainWindow):
         # Annotation Source Widget
         self.annotationSourceTextEdit.setText(WELCOME)
 
+        # Package editor
+        self.packageEditorDialog = PackageDialog()
+        self.connect(self.actionPackagesDialog, QtCore.SIGNAL("triggered()"),
+                     self.packageEditorDialog.open)
+
     def slot_open(self):
         """ Slot for actionQuit. """
         filename = unicode(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
@@ -265,11 +364,6 @@ class MainWindow(QtGui.QMainWindow):
             self.scaleComboBox.setCurrentIndex(0)
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
             self.statusBar().showMessage('Opened file %s.' % filename)
-
-    def slot_quit(self):
-        """ Slot for actionQuit. """
-        self.annotationWidget.remove_png()
-        self.close()
 
     def slot_hide_controls(self, event):
         """ Slot to hide controls properly and avoid recursion. """

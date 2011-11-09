@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'window.ui'
 #
-# Created: Tue Nov  8 00:31:55 2011
+# Created: Tue Nov  8 21:44:08 2011
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,6 +27,8 @@ class Ui_MainWindow(object):
         self.menuWindows.setObjectName("menuWindows")
         self.menu_Help = QtGui.QMenu(self.menubar)
         self.menu_Help.setObjectName("menu_Help")
+        self.menuPreferences = QtGui.QMenu(self.menubar)
+        self.menuPreferences.setObjectName("menuPreferences")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -151,6 +153,8 @@ class Ui_MainWindow(object):
         self.actionAnnotation.setObjectName("actionAnnotation")
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setObjectName("actionAbout")
+        self.actionPackagesDialog = QtGui.QAction(MainWindow)
+        self.actionPackagesDialog.setObjectName("actionPackagesDialog")
         self.menu_File.addAction(self.actionOpen)
         self.menu_File.addAction(self.actionSave)
         self.menu_File.addAction(self.actionExport)
@@ -160,8 +164,10 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionAnnotationSource)
         self.menuWindows.addAction(self.actionAnnotation)
         self.menu_Help.addAction(self.actionAbout)
+        self.menuPreferences.addAction(self.actionPackagesDialog)
         self.menubar.addAction(self.menu_File.menuAction())
         self.menubar.addAction(self.menuWindows.menuAction())
+        self.menubar.addAction(self.menuPreferences.menuAction())
         self.menubar.addAction(self.menu_Help.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -172,6 +178,7 @@ class Ui_MainWindow(object):
         self.menu_File.setTitle(QtGui.QApplication.translate("MainWindow", "&File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuWindows.setTitle(QtGui.QApplication.translate("MainWindow", "&Windows", None, QtGui.QApplication.UnicodeUTF8))
         self.menu_Help.setTitle(QtGui.QApplication.translate("MainWindow", "&Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuPreferences.setTitle(QtGui.QApplication.translate("MainWindow", "Preferences", None, QtGui.QApplication.UnicodeUTF8))
         self.controlsDockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Controls", None, QtGui.QApplication.UnicodeUTF8))
         self.previousPageButton.setText(QtGui.QApplication.translate("MainWindow", "Previous page", None, QtGui.QApplication.UnicodeUTF8))
         self.maxPageLabel.setText(QtGui.QApplication.translate("MainWindow", "/ 1", None, QtGui.QApplication.UnicodeUTF8))
@@ -193,4 +200,5 @@ class Ui_MainWindow(object):
         self.actionAnnotationSource.setText(QtGui.QApplication.translate("MainWindow", "Annotation &Source", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAnnotation.setText(QtGui.QApplication.translate("MainWindow", "&Annotation", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout.setText(QtGui.QApplication.translate("MainWindow", "&About", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPackagesDialog.setText(QtGui.QApplication.translate("MainWindow", "LaTeX packages", None, QtGui.QApplication.UnicodeUTF8))
 
