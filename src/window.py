@@ -9,18 +9,15 @@ from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
 from random import randint
 
+PREAMBLE = '''\documentclass[12pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+'''
+
 WELCOME = u"""\\begin{center}
 Hello and welcome to notorius!
 \end{center}
 \[ \int_\Omega\,dµ = µ(\Omega) \]"""
 
-
-PACKAGES = [{u'babel' : [u'portuguese']},
-            {u'inputenc' : ['utf8x']},
-            {u'tikz' : []},
-            {u'amsmath' : []},
-            {u'amssymb' : []},
-            {u'amsfonts' : []}]
 
 PLATFORM = systemplat()
 if PLATFORM == 'Linux':
@@ -36,36 +33,15 @@ if PLATFORM == 'Linux':
 else:
     DPI_X = DPI_X = 96
 
-class PackageDialog(QtGui.QDialog):
+class PreambleWindow(QtGui.QMainWindow):
     """
     PackageDialog allows for editing of packages
     """
-    def __init__(self, parent = None, packages = None):
-        QtGui.QDialog.__init__(self, parent)
-        uic.loadUi('package_dialog.ui', self)
-        if packages is None:
-            self.packages = list(PACKAGES)
-        else:
-            self.packages = packages
-        self.packages_backup = list(self.packages)
-        for dic in self.packages:
-            self.packageList.addItem(dic.keys()[0])
-
-        self.connect(self.packageList,
-        QtCore.SIGNAL("currentRowChanged(int)"),
-                     self.slot_click_package)
-
-        self.connect(self.addPackageButton, QtCore.SIGNAL("clicked()"),
-                     self.slot_add_package)
-
-        self.connect(self.removePackageButton, QtCore.SIGNAL("clicked()"),
-                     self.slot_remove_package)
-
-        self.connect(self.addOptionButton, QtCore.SIGNAL("clicked()"),
-                     self.slot_add_option)
-
-        self.connect(self.removeOptionButton, QtCore.SIGNAL("clicked()"),
-                     self.slot_remove_option)
+    def __init__(self, parent = None, preamble = PREAMBLE):
+        QtGui.QMainWindow.__init__(self, parent)
+        uic.loadUi('package_window.ui', self)
+        self.ParentWindow = parent
+        self.preamble = unicode(preamble)
 
         self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
                      self.slot_cancel)
@@ -73,61 +49,28 @@ class PackageDialog(QtGui.QDialog):
         self.connect(self.saveButton, QtCore.SIGNAL("clicked()"),
                      self.slot_save)
 
-    def slot_add_package(self):
-        package = unicode(self.packagePlainText.toPlainText())
-        self.packageList.addItem(package)
-        self.packages += [{package : []}]
-        self.packagePlainText.clear()
-
-    def slot_remove_package(self):
-        package_index = self.packageList.currentRow()
-        del self.packages[package_index]
-        self.packageList.takeItem(package_index)
-
-    def slot_add_option(self):
-        option = self.optionPlainText.toPlainText()
-        self.optionList.addItem(option)
-        package_index = self.packageList.currentRow()
-        package = unicode(self.packageList.item(package_index).text())
-        self.packages[package_index][package] += [unicode(option)]
-        print self.packages
-        self.optionPlainText.clear()
-
-    def slot_remove_option(self):
-        package_index = self.packageList.currentRow()
-        package = unicode(self.packageList.item(package_index).text())
-        option_index = self.optionList.currentRow()
-        del self.packages[package_index][package][option_index]
-        self.optionList.takeItem(option_index)
-
-    def slot_click_package(self, event):
-        for i in xrange(0, self.optionList.count()):
-            self.optionList.takeItem(i)
-        self.optionList.clear()
-        dic = self.packages[event]
-        for options in dic[dic.keys()[0]]:
-            self.optionList.addItem(options)
+    def slot_open(self):
+        self.preamble = self.ParentWindow.preamble
+        self.preambleTextEdit.setText(self.preamble)
+        self.show()
 
     def slot_cancel(self):
-        self.packages = list(self.packages_backup)
         self.close()
 
     def slot_save(self):
-        print self.packages
+        self.preamble = unicode(self.preambleTextEdit.toPlainText())
+        self.ParentWindow.preamble = self.preamble
         self.close()
 
 class Note(object):
     """
     Note handles the creation and compilation of notes.
     """
-    def __init__(self, text = None, packages = None, id=0):
+    def __init__(self, text = None, preamble = PREAMBLE, note_id=0):
         self.filename = self.generate_filename()
         self.ImgPixmap = QtGui.QPixmap()
-        self.id = id
-        if packages is None:
-            self._packages = list(PACKAGES)
-        else:
-            self._packages = packages
+        self.note_id = note_id
+        self._preamble = preamble
         self._text = text
         if text is not None:
             self.text = text
@@ -141,11 +84,11 @@ class Note(object):
         self.update()
 
     @property
-    def packages(self):
-        return self._packages
-    @packages.setter
-    def packages(self, packages):
-        self._packages = packages
+    def preamble(self):
+        return self._preamble
+    @preamble.setter
+    def preamble(self, preamble):
+        self._preamble = preamble
         self.update()
 
     def generate_filename(self):
@@ -187,18 +130,7 @@ class Note(object):
             print 'You do not have a dvipng distribution!'
 
     def generate_source(self):
-        tex_source  = '\documentclass[12pt,a4paper]{article}'+ "\n"
-        for dic in self.packages:
-            package = dic.keys()[0]
-            try:
-                line = '\usepackage['
-                for options in dic[package][:-1]:
-                    line += options + ','
-                line += dic[package][-1] + ']'
-            except IndexError:
-                line = '\usepackage'
-            line += '{' + package + "}\n"
-            tex_source += line
+        tex_source  = self.preamble  + "\n"
         tex_source += '\pagestyle{empty}' + "\n"
         tex_source += "\\begin{document}\n"
         tex_source += self.text
@@ -306,6 +238,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi('window.ui', self)
+        self._preamble = PREAMBLE
 
         # File menu
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
@@ -367,7 +300,7 @@ class MainWindow(QtGui.QMainWindow):
                                                 0, 0, 1, 1)
 
         # Beginning note
-        self.current_note = Note(WELCOME)
+        self.current_note = Note(WELCOME, self.preamble)
 
         # Annotation PNG widget
         self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
@@ -385,9 +318,18 @@ class MainWindow(QtGui.QMainWindow):
         self.annotationSourceTextEdit.setText(WELCOME)
 
         # Package editor
-        self.packageEditorDialog = PackageDialog()
+        self.packageWindow = PreambleWindow(self)
         self.connect(self.actionPackagesDialog, QtCore.SIGNAL("triggered()"),
-                     self.packageEditorDialog.open)
+                     self.packageWindow.slot_open)
+
+    @property
+    def preamble(self):
+        return self._preamble
+    @preamble.setter
+    def preamble(self, preamble):
+        self._preamble = preamble
+        self.current_note.preamble = preamble
+        self.slot_compile_annotation()
 
     def slot_open(self):
         """ Slot for actionQuit. """
