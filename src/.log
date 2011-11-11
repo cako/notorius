@@ -1,0 +1,31 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2011.4.6)  11 NOV 2011 14:12
+entering extended mode
+ %&-line parsing enabled.
+**^^D^^D
+ (/usr/share/texmf-texlive/tex/latex/tools/.tex
+! Interruption.
+<to be read again> 
+                   \begingroup 
+l.1 
+    %%
+? Q
+OK, entering \batchmode...
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, portuguese, loaded.
+ File ignored)
+! Emergency stop.
+<*> ^^D^^D
+          
+*** (job aborted, no legal \end found)
+
+ 
+Here is how much of TeX's memory you used:
+ 5 strings out of 495041
+ 226 string characters out of 1181898
+ 45131 words of memory out of 3000000
+ 3288 multiletter control sequences out of 15000+50000
+ 3640 words of font info for 14 fonts, out of 3000000 for 9000
+ 30 hyphenation exceptions out of 8191
+ 6i,0n,1p,82b,8s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!

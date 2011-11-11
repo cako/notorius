@@ -4,20 +4,21 @@
 
 import os
 import subprocess
+import threading
 import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
+from time import sleep
 from random import randint
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
 \usepackage[utf8x]{inputenc}
 '''
 
-WELCOME = u"""\\begin{center}
-Hello and welcome to notorius!
-\end{center}
-\[ \int_\Omega\,dµ = µ(\Omega) \]"""
-
+WELCOME = u'''\\begin{center}
+Hello and welcome to notorius!\\\\
+It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar í \\tau$!
+\end{center}'''
 
 PLATFORM = systemplat()
 if PLATFORM == 'Linux':
@@ -37,6 +38,32 @@ if PLATFORM == 'Windows':
     DIR = os.path.dirname(__file__)+"\\"
 else:
     DIR = os.path.dirname(__file__)+"/"
+
+COMPILER = 'pdflatex'
+try:
+    proc = subprocess.Popen([COMPILER, "--version"], stdout=subprocess.PIPE)
+    proc.stdout.close()
+except OSError:
+    COMPILER = 'latex'
+
+#class CompileThread(threading.Thread):
+    #def __init__(self, parent = None):
+        #super(CompileThread, self).__init__()
+        #self.ParentWindow = parent
+    #def run(self):
+        #self.text_prev = None
+        #self.callback = None
+        #self.timeout =  3
+        #while(True):
+            #text = unicode(self.ParentWindow.annotationSourceTextEdit.toPlainText())
+            #print text
+            #if self.text_prev == text:
+                #print 'equal'
+                #sleep(self.timeout)
+            #else:
+                #print 'diff'
+                #self.ParentWindow.slot_compile_annotation()
+                #self.text_prev = text
 
 class PreambleWindow(QtGui.QMainWindow):
     """
@@ -71,9 +98,11 @@ class Note(object):
     """
     Note handles the creation and compilation of notes.
     """
-    def __init__(self, text = None, preamble = PREAMBLE, note_id=0):
+    def __init__(self, text = None, preamble = PREAMBLE, compiler = COMPILER,
+                 note_id=0):
         self.filename = self.generate_filename()
         self.ImgPixmap = QtGui.QPixmap()
+        self.compiler = compiler
         self.note_id = note_id
         self._preamble = preamble
         self._text = text
@@ -109,41 +138,79 @@ class Note(object):
         return filename
 
     def generate_file(self):
-        filehandle = open(self.filename, 'w')
-        filehandle.write(self.tex_source.encode('UTF-8'))
-        filehandle.close()
-
-    def generate_dvi(self):
         try:
-            latex_proc = subprocess.call(["latex", "--interaction=nonstopmode",
-                                           self.filename],
-                                           stdout=subprocess.PIPE)
+            filehandle = open(self.filename, 'w')
+            filehandle.write(self.tex_source.encode('UTF-8'))
+            filehandle.close()
+            return True
+        except IOError:
+            print 'Could not write note!'
+            return False
+
+    def generate_from_tex(self):
+        try:
+            subprocess.call([self.compiler, "--interaction=nonstopmode",
+                             self.filename], stdout=subprocess.PIPE)
+            return True
         except OSError:
-            print 'You do not have a LaTeX distribution!'
+            print 'You do not have %s installed!' % self.compiler
+            return False
 
     def generate_png(self):
         filebase = self.filename.rstrip('tex')
-        filename_dvi = filebase + 'dvi'
+        if self.compiler == 'latex':
+            ext = 'dvi'
+        elif self.compiler == 'pdflatex':
+            ext = 'pdf'
+        elif self.compiler == 'pslatex':
+            ext = 'ps'
+        filename_ext = filebase + ext
         filename_png = filebase + 'png'
+
         # Gotta learn how to use bbox on -T option
-        try:
-            dvipng_proc = subprocess.call(["dvipng", "-x", "1500", "-Q", "17",
-                                            "-T", "tight", "--follow", "-o",
-                                            filename_png, filename_dvi],
-                                            stdout=subprocess.PIPE)
-        except OSError:
-            print 'You do not have a dvipng distribution!'
+        dvipng_command = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
+                            "--follow", "-o", filename_png, filename_ext]
+        imagemagick_command  = ["convert", "-trim", "-density",
+                                "%fx%f" % (1.5*DPI_X, 1.5*DPI_Y),
+                                filename_ext, filename_png]
+        if ext == 'dvi':
+            try:
+                subprocess.call(dvipng_command, stdout=subprocess.PIPE)
+                return True
+            except OSError:
+                print 'You do not have a dvipng distribution!'
+                print 'Falling back on imagemagick'
+                try:
+                    subprocess.call(imagemagick_command, stdout=subprocess.PIPE)
+                    return True
+                except OSError:
+                    print 'You do not have imagemagick installed!'
+                    return False
+        elif (ext == 'pdf') or (ext == 'ps'):
+            try:
+                subprocess.call(imagemagick_command, stdout=subprocess.PIPE)
+                return True
+            except OSError:
+                print 'You do not have imagemagick installed!'
+                return False
 
     def generate_source(self):
         tex_source  = self.preamble  + "\n"
         tex_source += '\pagestyle{empty}' + "\n"
         tex_source += "\\begin{document}\n"
+        tex_source += "\\noindent\n"
         tex_source += self.text
         tex_source += "\n"+ '\end{document}'
         self.tex_source = tex_source
 
     def remove_files(self):
-        for ext in ["aux", "log", "dvi", "tex"]:
+        if self.compiler == 'latex':
+            ext = 'dvi'
+        elif self.compiler == 'pdflatex':
+            ext = 'pdf'
+        elif self.compiler == 'pslatex':
+            ext = 'ps'
+        for ext in ["aux", "log", "tex", ext]:
             os.remove(self.filename.rstrip('tex') + ext)
 
     def remove_png(self):
@@ -151,11 +218,11 @@ class Note(object):
 
     def update(self):
         self.generate_source()
-        self.generate_file()
-        self.generate_dvi()
-        self.generate_png()
-        self.remove_files()
-        self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
+        if self.generate_file():
+            if self.generate_from_tex():
+                if self.generate_png():
+                    self.remove_files()
+                    self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
 
 class AnnotationWidget(QtGui.QWidget):
     """
@@ -322,10 +389,22 @@ class MainWindow(QtGui.QMainWindow):
         # Annotation Source Widget
         self.annotationSourceTextEdit.setText(WELCOME)
 
+        # Connections for Annotation Source Widget
+        #self.connect(self.annotationSourceTextEdit,
+                     #QtCore.SIGNAL("textChanged()"),
+                     #self.slot_run_thread)
+
         # Package editor
         self.packageWindow = PreambleWindow(self)
         self.connect(self.actionPackagesDialog, QtCore.SIGNAL("triggered()"),
                      self.packageWindow.slot_open)
+
+        # Compiling thread
+        #text = unicode(self.annotationSourceTextEdit.toPlainText())
+        #self.compileThread = CompileThread(self)
+        #self.compileThread.start()
+        #self.compileThread.text_prev = self.compileThread.text_now = text
+        #self.compileThread.callback = self.slot_compile_annotation
 
     @property
     def preamble(self):
@@ -395,6 +474,9 @@ class MainWindow(QtGui.QMainWindow):
         text = unicode(self.annotationSourceTextEdit.toPlainText())
         self.current_note.text = text
         self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
+
+    #def slot_run_thread(self):
+        #self.text_now = unicode(self.annotationSourceTextEdit.toPlainText())
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """

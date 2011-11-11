@@ -30,14 +30,48 @@ annotations.
 
 Requirements
 ------------
-* python 2.6
-* pyqt4
-* python-popper-qt4
-* latex
-* dvipng
+* [python 2.6](http://www.python.org/getit/releases/2.6/)
+* [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
+* [python-popper-qt4](http://code.google.com/p/python-poppler-qt4/)
+* [latex](http://www.latex-project.org/)
+* [dvipng](http://sourceforge.net/projects/dvipng/)
 
 Installation
 ------------
-Once you've got the python libraries, simply run main.py.
+Once you've got the python libraries, simply run main.py. Following are the
+installation instructions for the libraries.
+
+### Ubuntu
+
+First, you'll need a LaTeX installation, if you don't already have one.
+
+    sudo apt-get install texlive-latex-base
+
+Second, you will need PyQt4. If you don't have it, install it with:
+
+    sudo apt-get install python-qt4
+
+Finally, you have to install `python-popper-qt4`. To build it, you will need to
+install the following libraries:
+
+    sudo apt-get install python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
+
+Then download it, unpack it, build and install:
+
+    wget http://code.google.com/p/python-poppler-qt4/downloads/detail?name=python-poppler-qt4-0.16.2.tar.gz
+    tar xvzf python-poppler-qt4-0.16.2.tar.gz
+    cd python-poppler-qt4-0.16.2/
+    python setup.py build
+    sudo python setup.py install
+
+It can also be installed with
+[`pip`](http://www.pip-installer.org/en/latest/index.html):
+
+    sudo pip install python-poppler-qt4
+
+After the installation, the `-dev` libraries and `g++` can be uninstalled:
+
+    sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
+    sudo apt-get autoremove
 
 [img1]: http://i.imgur.com/OSsXu.png
