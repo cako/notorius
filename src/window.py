@@ -33,13 +33,20 @@ if PLATFORM == 'Linux':
 else:
     DPI_X = DPI_X = 96
 
+if PLATFORM == 'Windows':
+    DIR = os.path.dirname(__file__)+"\\"
+else:
+    DIR = os.path.dirname(__file__)+"/"
+
+print os.path.dirname(__file__)+"\\"
+
 class PreambleWindow(QtGui.QMainWindow):
     """
     PackageDialog allows for editing of packages
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi('package_window.ui', self)
+        uic.loadUi(DIR + 'package_window.ui', self)
         self.ParentWindow = parent
         self.preamble = unicode(preamble)
 
@@ -237,7 +244,7 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi('window.ui', self)
+        uic.loadUi(DIR + 'window.ui', self)
         self._preamble = PREAMBLE
 
         # File menu
