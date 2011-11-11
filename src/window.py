@@ -38,8 +38,6 @@ if PLATFORM == 'Windows':
 else:
     DIR = os.path.dirname(__file__)+"/"
 
-print os.path.dirname(__file__)+"\\"
-
 class PreambleWindow(QtGui.QMainWindow):
     """
     PackageDialog allows for editing of packages
