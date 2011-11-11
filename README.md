@@ -74,4 +74,4 @@ After the installation, the `-dev` libraries and `g++` can be uninstalled:
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
     sudo apt-get autoremove
 
-[img1]: http://i.imgur.com/OSsXu.png
+[img1]: http://i.imgur.com/E3vyQ.png
