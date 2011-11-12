@@ -566,9 +566,11 @@ class MainWindow(QtGui.QMainWindow):
                      QtCore.SIGNAL("triggered()"), self.slot_remove_note)
 
         # Connections for Annotation Source Widget
-        #self.connect(self.annotationSourceTextEdit,
-                     #QtCore.SIGNAL("textChanged()"),
-                     #self.slot_run_thread)
+        self.timer = QtCore.QTimer()
+        self.timer.start(3500)
+        self.connect(self.timer, QtCore.SIGNAL("timeout()"),
+                     self.slot_compile_annotation)
+        self.old_text = ''
 
         # Package editor
         self.packageWindow = PreambleWindow(self)
@@ -669,13 +671,12 @@ class MainWindow(QtGui.QMainWindow):
         Slot to compile the current annotation by changing annotationWidget's
         ImgLabel's Pixmap to the updated one.
         """
-        self.current_note.remove_png()
         text = unicode(self.annotationSourceTextEdit.toPlainText())
-        self.current_note.text = text
-        self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
-
-    #def slot_run_thread(self):
-        #self.text_now = unicode(self.annotationSourceTextEdit.toPlainText())
+        if self.old_text != text:
+            self.old_text = text
+            self.current_note.remove_png()
+            self.current_note.text = text
+            self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
