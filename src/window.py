@@ -269,6 +269,7 @@ class ImageLabel(QtGui.QLabel):
         self.note_pos = QtCore.QPointF()
         self.note_icon_pos = QtCore.QPoint()
         self.current_note_id = 0
+        self.closest_id = 0
         self.notes = []
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
 
@@ -291,8 +292,8 @@ class ImageLabel(QtGui.QLabel):
         self.change_menu.addAction(self.editNoteAction)
         self.removeNoteAction = QtGui.QAction(self)
         self.removeNoteAction.setText("Remove annotation")
-        self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
-                     self.slot_remove_note)
+        #self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
+                     #self.slot_change_note)
         self.change_menu.addAction(self.removeNoteAction)
 
     def contextMenu(self, pos):
@@ -313,15 +314,15 @@ class ImageLabel(QtGui.QLabel):
                             #print 'Note %d, %d' % (x, y)
                             dx = abs(pos.x() - x_offset - x)
                             dy = abs(pos.y() - y)
-                            print dx, dy
+                            #print dx, dy
                             if dx <= 11 and dy <= 11:
                                 min_id = note.note_id
                                 add = False
-                                print 'In note %d.' % note.note_id
+                                #print 'In note %d.' % note.note_id
                                 break
                     if min_id != -1:
                         add = False
-                        print min_id
+                        self.closest_id = min_id
                         self.change_menu.exec_(self.mapToGlobal(pos))
                 if add:
                     self.note_pos = self.px_2_pt(pos.x() - x_offset, pos.y())
@@ -355,10 +356,8 @@ class ImageLabel(QtGui.QLabel):
         print ''
 
     def slot_edit_note(self):
-        print 'Edit note'
-
-    def slot_remove_note(self):
-        print 'Remove note'
+        print 'Editing note %d' % self.closest_id
+        self.current_note_id = self.closest_id
 
     def pt_to_px(self, qsize):
         width = qsize.width()
@@ -460,20 +459,20 @@ class DocumentWidget(QtGui.QWidget):
 
             for note in self.ImgLabel.notes:
                 if note.page == self.page:
-                    print note.note_id
+                    #print note.note_id
                     x = note.pos.x()
                     x *= self.scale * DPI_X / 72.0
 
                     y = note.pos.y()
                     y *= self.scale * DPI_Y / 72.0
 
-                    print x,y
+                    #print x,y
                     painter = QtGui.QPainter()
                     painter.begin(self.Image)
                     painter.drawImage(x, y, self.ImgLabel.noteImage)
                     painter.end()
 
-                    self.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.Image))
+            self.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.Image))
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -560,7 +559,11 @@ class MainWindow(QtGui.QMainWindow):
         # Annotation Source Widget
         self.annotationSourceTextEdit.setText(WELCOME)
         self.connect(self.documentWidget.ImgLabel.addNoteAction,
-                     QtCore.SIGNAL("triggered()"), self.slot_new_note)
+                     QtCore.SIGNAL("triggered()"), self.slot_change_note)
+        self.connect(self.documentWidget.ImgLabel.editNoteAction,
+                     QtCore.SIGNAL("triggered()"), self.slot_change_note)
+        self.connect(self.documentWidget.ImgLabel.removeNoteAction,
+                     QtCore.SIGNAL("triggered()"), self.slot_remove_note)
 
         # Connections for Annotation Source Widget
         #self.connect(self.annotationSourceTextEdit,
@@ -600,7 +603,7 @@ class MainWindow(QtGui.QMainWindow):
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
             self.statusBar().showMessage('Opened file %s.' % filename)
 
-    def slot_new_note(self):
+    def slot_change_note(self):
         if self.current_note.note_id != 0:
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
@@ -609,6 +612,19 @@ class MainWindow(QtGui.QMainWindow):
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
         self.annotationSourceTextEdit.setText(self.current_note.text)
         self.slot_compile_annotation()
+
+    def slot_remove_note(self):
+        note_id = self.documentWidget.ImgLabel.closest_id
+        print 'Remove note %d' % note_id
+        if self.documentWidget.ImgLabel.current_note_id == note_id:
+            self.current_note.remove_png()
+            self.annotationSourceTextEdit.setText('')
+            whitePixmap = QtGui.QPixmap()
+            whitePixmap.fill()
+            self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
+        del self.documentWidget.ImgLabel.notes[note_id]
+        self.documentWidget.update_image()
+
 
     def slot_hide_controls(self, event):
         """ Slot to hide controls properly and avoid recursion. """
