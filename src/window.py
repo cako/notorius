@@ -296,6 +296,9 @@ class ImageLabel(QtGui.QLabel):
                      #self.slot_change_note)
         self.change_menu.addAction(self.removeNoteAction)
 
+    def mouseClickEvent(self, event):
+        print event.x(), event.y()
+
     def contextMenu(self, pos):
         try:
             width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
@@ -303,9 +306,9 @@ class ImageLabel(QtGui.QLabel):
             if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
                 add = True
                 if len(self.notes) != 0:
-                    for note in self.notes:
+                    min_id = -1
+                    for note in [n for n in self.notes if n != -1]:
                         if note.page == self.ParentWidget.page:
-                            min_id = -1
                             x = (note.pos.x() *
                                  self.ParentWidget.scale * DPI_X / 72.0) + 11
                             y = (note.pos.y() *
@@ -337,7 +340,11 @@ class ImageLabel(QtGui.QLabel):
             pass
 
     def slot_add_note(self):
-        note_id = len(self.notes)
+        # Try to find a note that has been deleted
+        try:
+            note_id = self.notes.index(-1)
+        except ValueError:
+            note_id = len(self.notes)
         #print 'Preamble: ', self.preamble
         #print 'Compiler: ', COMPILER
         #print 'pos: ', self.note_pos
@@ -457,7 +464,7 @@ class DocumentWidget(QtGui.QWidget):
                                                         DPI_Y*self.scale)
             self.ImgLabel.setPixmap(self.ImgPixmap.fromImage(self.Image))
 
-            for note in self.ImgLabel.notes:
+            for note in [n for n in self.ImgLabel.notes if n != -1]:
                 if note.page == self.page:
                     #print note.note_id
                     x = note.pos.x()
@@ -491,7 +498,7 @@ class MainWindow(QtGui.QMainWindow):
         # Windows menu
         self.connect(self.actionControls,
                      QtCore.SIGNAL("toggled(bool)"),
-                     self.controlsDockWidget.setVisible)
+                     self.controlsWidget.setVisible)
         self.connect(self.actionAnnotationSource,
                      QtCore.SIGNAL("toggled(bool)"),
                      self.annotationSourceDockWidget.setVisible)
@@ -499,7 +506,7 @@ class MainWindow(QtGui.QMainWindow):
                      QtCore.SIGNAL("toggled(bool)"),
                      self.annotationDockWidget.setVisible)
 
-        self.connect(self.controlsDockWidget,
+        self.connect(self.controlsWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_controls)
         self.connect(self.annotationDockWidget,
@@ -510,10 +517,10 @@ class MainWindow(QtGui.QMainWindow):
                      self.slot_hide_annotation_source)
 
         # Scroll Widget for PDF viewer
-        self.scrollArea = QtGui.QScrollArea(self.centralwidget)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
+        #self.scrollArea = QtGui.QScrollArea(self.centralwidget)
+        #self.scrollArea.setWidgetResizable(True)
+        #self.scrollArea.setObjectName("scrollArea")
+        #self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
 
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
@@ -624,13 +631,13 @@ class MainWindow(QtGui.QMainWindow):
             whitePixmap = QtGui.QPixmap()
             whitePixmap.fill()
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
-        del self.documentWidget.ImgLabel.notes[note_id]
+        self.documentWidget.ImgLabel.notes[note_id] = -1
         self.documentWidget.update_image()
 
 
     def slot_hide_controls(self, event):
         """ Slot to hide controls properly and avoid recursion. """
-        if self.controlsDockWidget.isVisible():
+        if self.controlsWidget.isVisible():
             self.actionControls.setChecked(True)
         if self.annotationDockWidget.isHidden():
             self.actionControls.setChecked(False)
@@ -686,7 +693,7 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(2)
 
     def closeEvent(self, event):
-        for note in self.documentWidget.ImgLabel.notes:
+        for note in [n for n in self.documentWidget.ImgLabel.notes if n != -1]:
             note.remove_png()
         try:
             self.current_note.remove_png()
