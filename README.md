@@ -23,10 +23,9 @@ I've written a couple of scripts (first
 to use. So I decided I'd write a full-blown PDF reader. This is my meager
 attempt at doing so.
 
-The project is very much in its infancy, but key parts have already been
-implemented. So far it can open PDF files and generate annotations, but there
-is no integration between the two. There is also no way to keep track of
-annotations.
+The project is very much a work in progress, but key parts have already been
+implemented. So far it can open PDF files and add annotations. Editing specific
+annotations, removing, moving them and saving them is yet to be written.
 
 Requirements
 ------------
@@ -78,7 +77,7 @@ After the installation, the `-dev` libraries and `g++` can be uninstalled:
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
     sudo apt-get autoremove
 
-[img1]: http://i.imgur.com/E3vyQ.png
+[img1]: http://i.imgur.com/OgqCM.png
 
 License
 ------- 
