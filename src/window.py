@@ -609,6 +609,7 @@ class MainWindow(QtGui.QMainWindow):
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
             self.documentWidget.ImgLabel.displayed_note_id = -2
             self.documentWidget.ImgLabel.current_note_id = -2
+        self.documentWidget.ImgLabel.notes[note_id].remove_files()
         del self.documentWidget.ImgLabel.notes[note_id]
         self.documentWidget.update_image()
 
