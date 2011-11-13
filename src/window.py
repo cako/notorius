@@ -462,6 +462,7 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(DIR + 'window.ui', self)
         self._preamble = PREAMBLE
+        self.displayed_note_id = -1
 
         # File menu
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
@@ -588,12 +589,11 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_change_note(self):
-        if (self.documentWidget.ImgLabel.current_note_id != -1 and
-            self.documentWidget.ImgLabel.current_note_id != -2):
+        note_id = self.documentWidget.ImgLabel.current_note_id
+        if (self.displayed_note_id != -1 and self.displayed_note_id != -2):
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
         self.current_note.remove_png()
-        note_id = self.documentWidget.ImgLabel.current_note_id
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
         self.annotationSourceTextEdit.setText(self.current_note.text)
         self.slot_compile_annotation()
@@ -607,6 +607,7 @@ class MainWindow(QtGui.QMainWindow):
             whitePixmap = QtGui.QPixmap()
             whitePixmap.fill()
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
+            self.documentWidget.ImgLabel.displayed_note_id = -2
             self.documentWidget.ImgLabel.current_note_id = -2
         del self.documentWidget.ImgLabel.notes[note_id]
         self.documentWidget.update_image()
@@ -661,6 +662,7 @@ class MainWindow(QtGui.QMainWindow):
             self.current_note.remove_png()
             self.current_note.text = text
             self.current_note.update()
+            self.displayed_note_id = self.current_note.note_id
             self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
 
     def resizeEvent(self, event):
