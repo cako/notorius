@@ -104,22 +104,13 @@ class Note(object):
                  page = 1, pos = None, note_id = -1):
         self.filename = self.generate_filename()
         self.ImgPixmap = QtGui.QPixmap()
-        self.compiler = compiler
-        self.pos = pos
-        self.page = page
-        self.note_id = note_id
-        self._preamble = preamble
-        self._text = text
-        if text is not None:
-            self.text = text
 
-    @property
-    def text(self):
-        return self._text
-    @text.setter
-    def text(self, text):
-        self._text = text
-        self.update()
+        self.text = text
+        self._preamble = preamble
+        self.compiler = compiler
+        self.page = page
+        self.pos = pos
+        self.note_id = note_id
 
     @property
     def preamble(self):
@@ -232,8 +223,9 @@ class Note(object):
             os.remove(self.filename.rstrip('tex') + 'png')
         except OSError:
             pass
+
     def update(self):
-        #print 'Updating...'
+        print 'Updating note %s' % self.note_id
         self.generate_source()
         if self.generate_file():
             if self.generate_from_tex():
@@ -242,6 +234,9 @@ class Note(object):
                     self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
 
 class ImageLabel(QtGui.QLabel):
+
+    remove_trigger = QtCore.pyqtSignal()
+
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
         self.ParentWidget = parent
@@ -252,6 +247,7 @@ class ImageLabel(QtGui.QLabel):
         self.closest_id = 0
         self.notes = {}
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
+
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self,
@@ -342,6 +338,7 @@ class ImageLabel(QtGui.QLabel):
     def slot_remove_note(self):
         print 'Remove note %d' % self.closest_id
         self.current_note_id = self.closest_id
+        self.remove_trigger.emit()
 
     def pt_to_px(self, qsize):
         width = qsize.width()
@@ -546,8 +543,9 @@ class MainWindow(QtGui.QMainWindow):
                      QtCore.SIGNAL("triggered()"), self.slot_change_note)
         self.connect(self.documentWidget.ImgLabel.editNoteAction,
                      QtCore.SIGNAL("triggered()"), self.slot_change_note)
-        self.connect(self.documentWidget.ImgLabel.removeNoteAction,
-                     QtCore.SIGNAL("triggered()"), self.slot_remove_note)
+        #self.connect(self.documentWidget.ImgLabel.removeNoteAction,
+                     #QtCore.SIGNAL("triggered()"), self.slot_remove_note)
+        self.documentWidget.ImgLabel.remove_trigger.connect(self.slot_remove_note)
 
         # Connections for Annotation Source Widget
         self.timer = QtCore.QTimer()
@@ -590,9 +588,10 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_change_note(self):
-        #if self.current_note.note_id != -1:
-            #text = unicode(self.annotationSourceTextEdit.toPlainText())
-            #self.current_note.text = text
+        if (self.documentWidget.ImgLabel.current_note_id != -1 and
+            self.documentWidget.ImgLabel.current_note_id != -2):
+            text = unicode(self.annotationSourceTextEdit.toPlainText())
+            self.current_note.text = text
         self.current_note.remove_png()
         note_id = self.documentWidget.ImgLabel.current_note_id
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
@@ -601,13 +600,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_remove_note(self):
         note_id = self.documentWidget.ImgLabel.closest_id
-        print 'Remove note %d' % note_id
+        print 'Main remove note %d' % note_id
         if self.documentWidget.ImgLabel.current_note_id == note_id:
             self.current_note.remove_png()
             self.annotationSourceTextEdit.setText('')
             whitePixmap = QtGui.QPixmap()
             whitePixmap.fill()
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
+            self.documentWidget.ImgLabel.current_note_id = -2
         del self.documentWidget.ImgLabel.notes[note_id]
         self.documentWidget.update_image()
 
@@ -655,10 +655,12 @@ class MainWindow(QtGui.QMainWindow):
         ImgLabel's Pixmap to the updated one.
         """
         text = unicode(self.annotationSourceTextEdit.toPlainText())
-        if self.old_text != text:
+        if (self.old_text != text and
+            self.documentWidget.ImgLabel.current_note_id  != -2):
             self.old_text = text
             self.current_note.remove_png()
             self.current_note.text = text
+            self.current_note.update()
             self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
 
     def resizeEvent(self, event):
