@@ -251,7 +251,6 @@ class Note(object):
             os.remove(self.filename.rstrip('tex') + 'png')
         except OSError:
             pass
-
     def update(self):
         #print 'Updating...'
         self.generate_source()
@@ -292,8 +291,8 @@ class ImageLabel(QtGui.QLabel):
         self.change_menu.addAction(self.editNoteAction)
         self.removeNoteAction = QtGui.QAction(self)
         self.removeNoteAction.setText("Remove annotation")
-        #self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
-                     #self.slot_change_note)
+        self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
+                     self.slot_remove_note)
         self.change_menu.addAction(self.removeNoteAction)
 
     def mouseClickEvent(self, event):
@@ -360,10 +359,13 @@ class ImageLabel(QtGui.QLabel):
         painter.end()
 
         self.ParentWidget.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.ParentWidget.Image))
-        print ''
 
     def slot_edit_note(self):
-        print 'Editing note %d' % self.closest_id
+        print "Editing note %d\n" % self.closest_id
+        self.current_note_id = self.closest_id
+
+    def slot_remove_note(self):
+        print 'Remove note %d' % self.closest_id
         self.current_note_id = self.closest_id
 
     def pt_to_px(self, qsize):
@@ -688,7 +690,7 @@ class MainWindow(QtGui.QMainWindow):
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
         if self.scaleComboBox.currentIndex() == 1:
-            self.documentWidget.fit_to_width_or_height(1)
+            self.documentWidget.fit_to_width_or_height(0)
         elif self.scaleComboBox.currentIndex() == 2:
             self.documentWidget.fit_to_width_or_height(2)
 
