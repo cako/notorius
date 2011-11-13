@@ -101,7 +101,7 @@ class Note(object):
     Note handles the creation and compilation of notes.
     """
     def __init__(self, text = None, preamble = PREAMBLE, compiler = COMPILER,
-                 page = 1, pos = None, note_id=0):
+                 page = 1, pos = None, note_id = -1):
         self.filename = self.generate_filename()
         self.ImgPixmap = QtGui.QPixmap()
         self.compiler = compiler
@@ -250,7 +250,7 @@ class ImageLabel(QtGui.QLabel):
         self.note_icon_pos = QtCore.QPoint()
         self.current_note_id = 0
         self.closest_id = 0
-        self.notes = []
+        self.notes = {}
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -280,53 +280,34 @@ class ImageLabel(QtGui.QLabel):
         print event.x(), event.y()
 
     def contextMenu(self, pos):
-        try:
-            width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
-            x_offset = (self.rect().width() - width)/2.0
-            if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
-                #add = True
-                #if len(self.notes) != 0:
-                    #min_id = -1
-                    #for note in [n for n in self.notes if n != -1]:
-                        #if note.page == self.ParentWidget.page:
-                            #x = (note.pos.x() *
-                                 #self.ParentWidget.scale * DPI_X / 72.0) + 11
-                            #y = (note.pos.y() *
-                                 #self.ParentWidget.scale * DPI_Y / 72.0) + 11
-                            ##print 'Mouse %d, %d' % (pos.x()- x_offset, pos.y())
-                            ##print 'Note %d, %d' % (x, y)
-                            #dx = abs(pos.x() - x_offset - x)
-                            #dy = abs(pos.y() - y)
-                            ##print dx, dy
-                            #if dx <= 11 and dy <= 11:
-                                #min_id = note.note_id
-                                #add = False
-                                ##print 'In note %d.' % note.note_id
-                                #break
-                    #if min_id != -1:
-                        #add = False
-                        #self.closest_id = min_id
-                        #self.change_menu.exec_(self.mapToGlobal(pos))
-                if self.find_closest(pos.x(), pos.y()):
-                    self.change_menu.exec_(self.mapToGlobal(pos))
-                else:
-                    self.note_pos = self.px_2_pt(pos.x() - x_offset, pos.y())
-                    self.note_icon_pos = QtCore.QPoint(pos.x() - x_offset, pos.y())
-                    #print 'Note position: ', self.note_pos
-                    #print 'Mouse position', pos
-                    self.add_menu.exec_(self.mapToGlobal(pos))
+        print self.notes.values()
+        #try:
+        width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
+        x_offset = (self.rect().width() - width)/2.0
+        if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
+            if self.find_closest(pos.x(), pos.y()):
+                self.change_menu.exec_(self.mapToGlobal(pos))
+                print 'Edit'
             else:
-                print 'Not in area'
-        except AttributeError:
-            # No PDF has been loaded yet.
-            pass
+                print 'Add'
+                self.note_pos = self.px_2_pt(pos.x() - x_offset, pos.y())
+                self.note_icon_pos = QtCore.QPoint(pos.x() - x_offset, pos.y())
+                #print 'Note position: ', self.note_pos
+                #print 'Mouse position', pos
+                self.add_menu.exec_(self.mapToGlobal(pos))
+        else:
+            print 'Not in area'
+        #except AttributeError:
+            ## No PDF has been loaded yet.
+            #print 'AttributeError'
+            #pass
 
     def find_closest(self, x, y):
         found_it = False
         width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if len(self.notes) != 0:
-            for note in [n for n in self.notes if n != -1]:
+            for note in self.notes.values():
                 n_x = (note.pos.x() * self.ParentWidget.scale * DPI_X / 72.0) + 11
                 n_y = (note.pos.y() * self.ParentWidget.scale * DPI_X / 72.0) + 11
                 dx = abs(x - x_offset - n_x)
@@ -334,25 +315,17 @@ class ImageLabel(QtGui.QLabel):
                 if dx <= 11 and dy <= 11:
                     self.closest_id = note.note_id
                     found_it = True
-                    #print 'In note %d.' % note.note_id
                     break
         return found_it
 
-
-
     def slot_add_note(self):
-        # Try to find a note that has been deleted
         try:
-            note_id = self.notes.index(-1)
+            note_id = max(self.notes.keys()) + 1
         except ValueError:
-            note_id = len(self.notes)
-        #print 'Preamble: ', self.preamble
-        #print 'Compiler: ', COMPILER
-        #print 'pos: ', self.note_pos
-        #print 'Note ID: ', note_id
+            note_id = 0
         self.current_note_id = note_id
-        self.notes += [Note('New note', self.preamble, COMPILER,
-                            self.ParentWidget.page, self.note_pos, note_id)]
+        self.notes[note_id] = Note('New note', self.preamble, COMPILER,
+                                   self.ParentWidget.page, self.note_pos, note_id)
 
         x, y = self.pt_to_px(QtCore.QSize(self.note_pos.x(), self.note_pos.y()))
         painter = QtGui.QPainter()
@@ -440,7 +413,7 @@ class DocumentWidget(QtGui.QWidget):
     def change_page(self, event):
         """ Changes the page. """
         if self.Document is not None:
-            self.page = (event-1)%self.num_pages
+            self.page = (event-1) % self.num_pages
             self.CurrentPage = self.Document.page(self.page)
             self.update_image()
 
@@ -468,7 +441,7 @@ class DocumentWidget(QtGui.QWidget):
                                                         DPI_Y*self.scale)
             self.ImgLabel.setPixmap(self.ImgPixmap.fromImage(self.Image))
 
-            for note in [n for n in self.ImgLabel.notes if n != -1]:
+            for note in self.ImgLabel.notes.values():
                 if note.page == self.page:
                     #print note.note_id
                     x = note.pos.x()
@@ -617,9 +590,9 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_change_note(self):
-        if self.current_note.note_id != 0:
-            text = unicode(self.annotationSourceTextEdit.toPlainText())
-            self.current_note.text = text
+        #if self.current_note.note_id != -1:
+            #text = unicode(self.annotationSourceTextEdit.toPlainText())
+            #self.current_note.text = text
         self.current_note.remove_png()
         note_id = self.documentWidget.ImgLabel.current_note_id
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
@@ -635,9 +608,8 @@ class MainWindow(QtGui.QMainWindow):
             whitePixmap = QtGui.QPixmap()
             whitePixmap.fill()
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
-        self.documentWidget.ImgLabel.notes[note_id] = -1
+        del self.documentWidget.ImgLabel.notes[note_id]
         self.documentWidget.update_image()
-
 
     def slot_hide_controls(self, event):
         """ Slot to hide controls properly and avoid recursion. """
@@ -697,7 +669,7 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(2)
 
     def closeEvent(self, event):
-        for note in [n for n in self.documentWidget.ImgLabel.notes if n != -1]:
+        for note in self.documentWidget.ImgLabel.notes.values():
             note.remove_png()
         try:
             self.current_note.remove_png()
