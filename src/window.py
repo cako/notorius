@@ -67,25 +67,6 @@ try:
 except OSError:
     COMPILER = 'latex'
 
-#class CompileThread(threading.Thread):
-    #def __init__(self, parent = None):
-        #super(CompileThread, self).__init__()
-        #self.ParentWindow = parent
-    #def run(self):
-        #self.text_prev = None
-        #self.callback = None
-        #self.timeout =  3
-        #while(True):
-            #text = unicode(self.ParentWindow.annotationSourceTextEdit.toPlainText())
-            #print text
-            #if self.text_prev == text:
-                #print 'equal'
-                #sleep(self.timeout)
-            #else:
-                #print 'diff'
-                #self.ParentWindow.slot_compile_annotation()
-                #self.text_prev = text
-
 class PreambleWindow(QtGui.QMainWindow):
     """
     PackageDialog allows for editing of packages
@@ -303,30 +284,32 @@ class ImageLabel(QtGui.QLabel):
             width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
             x_offset = (self.rect().width() - width)/2.0
             if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
-                add = True
-                if len(self.notes) != 0:
-                    min_id = -1
-                    for note in [n for n in self.notes if n != -1]:
-                        if note.page == self.ParentWidget.page:
-                            x = (note.pos.x() *
-                                 self.ParentWidget.scale * DPI_X / 72.0) + 11
-                            y = (note.pos.y() *
-                                 self.ParentWidget.scale * DPI_Y / 72.0) + 11
-                            #print 'Mouse %d, %d' % (pos.x()- x_offset, pos.y())
-                            #print 'Note %d, %d' % (x, y)
-                            dx = abs(pos.x() - x_offset - x)
-                            dy = abs(pos.y() - y)
-                            #print dx, dy
-                            if dx <= 11 and dy <= 11:
-                                min_id = note.note_id
-                                add = False
-                                #print 'In note %d.' % note.note_id
-                                break
-                    if min_id != -1:
-                        add = False
-                        self.closest_id = min_id
-                        self.change_menu.exec_(self.mapToGlobal(pos))
-                if add:
+                #add = True
+                #if len(self.notes) != 0:
+                    #min_id = -1
+                    #for note in [n for n in self.notes if n != -1]:
+                        #if note.page == self.ParentWidget.page:
+                            #x = (note.pos.x() *
+                                 #self.ParentWidget.scale * DPI_X / 72.0) + 11
+                            #y = (note.pos.y() *
+                                 #self.ParentWidget.scale * DPI_Y / 72.0) + 11
+                            ##print 'Mouse %d, %d' % (pos.x()- x_offset, pos.y())
+                            ##print 'Note %d, %d' % (x, y)
+                            #dx = abs(pos.x() - x_offset - x)
+                            #dy = abs(pos.y() - y)
+                            ##print dx, dy
+                            #if dx <= 11 and dy <= 11:
+                                #min_id = note.note_id
+                                #add = False
+                                ##print 'In note %d.' % note.note_id
+                                #break
+                    #if min_id != -1:
+                        #add = False
+                        #self.closest_id = min_id
+                        #self.change_menu.exec_(self.mapToGlobal(pos))
+                if self.find_closest(pos.x(), pos.y()):
+                    self.change_menu.exec_(self.mapToGlobal(pos))
+                else:
                     self.note_pos = self.px_2_pt(pos.x() - x_offset, pos.y())
                     self.note_icon_pos = QtCore.QPoint(pos.x() - x_offset, pos.y())
                     #print 'Note position: ', self.note_pos
@@ -337,6 +320,25 @@ class ImageLabel(QtGui.QLabel):
         except AttributeError:
             # No PDF has been loaded yet.
             pass
+
+    def find_closest(self, x, y):
+        found_it = False
+        width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
+        x_offset = (self.rect().width() - width)/2.0
+        if len(self.notes) != 0:
+            for note in [n for n in self.notes if n != -1]:
+                n_x = (note.pos.x() * self.ParentWidget.scale * DPI_X / 72.0) + 11
+                n_y = (note.pos.y() * self.ParentWidget.scale * DPI_X / 72.0) + 11
+                dx = abs(x - x_offset - n_x)
+                dy = abs(y - n_y)
+                if dx <= 11 and dy <= 11:
+                    self.closest_id = note.note_id
+                    found_it = True
+                    #print 'In note %d.' % note.note_id
+                    break
+        return found_it
+
+
 
     def slot_add_note(self):
         # Try to find a note that has been deleted
