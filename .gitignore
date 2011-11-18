@@ -1,6 +1,8 @@
 nogit/
 tags
 .vim.custom
+*_pyuic4.py
+*.tex
 *.swp
 *.swo
 *.pyc

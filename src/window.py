@@ -213,24 +213,28 @@ class Note(object):
     def remove_files(self):
         #print 'Removing files'
         if self.compiler == 'latex':
-            ext = 'dvi'
+            exte = 'dvi'
         elif self.compiler == 'pdflatex':
-            ext = 'pdf'
+            exte = 'pdf'
         elif self.compiler == 'pslatex':
-            ext = 'ps'
-        for ext in ["aux", "log", "tex", ext]:
+            exte = 'ps'
+        for ext in ["aux", "log", "tex", exte]:
+            filename = self.filename.rstrip('tex') + ext
             try:
-                os.remove(self.filename.rstrip('tex') + ext)
+                os.remove(filename)
             except OSError:
+                print 'File %s was already removed.' % filename
                 pass
 
     def remove_png(self):
         #print 'Removing png'
-        try:
-            os.remove(self.filename.rstrip('tex') + 'png')
-            os.remove(self.filename.rstrip('tex') + 'border.png')
-        except OSError:
-            pass
+        for ext in ['png', 'border.png']:
+            filename = self.filename.rstrip('tex') + ext
+            try:
+                os.remove(filename)
+            except OSError:
+                print 'File %s was already removed.' % filename
+                pass
 
     def update(self):
         print 'Updating note %s' % self.note_id
@@ -293,25 +297,17 @@ class ImageLabel(QtGui.QLabel):
         except AttributeError:
             # No PDF has been loaded yet.
             width = 0
+
         x_offset = (self.rect().width() - width)/2.0
         if (event.x() >= x_offset) and (event.x() <= width + x_offset):
             if self.find_closest(event.x(), event.y()):
                 note = self.notes[self.closest_id]
                 note.generate_source()
-                #if note.generate_file():
-                    #if note.generate_from_tex():
-                        #if note.generate_png():
-                            #note.remove_files()
                 img_path =  DIR + note.filename.rstrip('tex') + 'border.png'
                 QtGui.QToolTip.showText(event.globalPos(),
                                         'Note %d: %s <img src="%s">'
                                         % (note.note_id, '<br />', img_path),
                                         self)
-                #painter = QtGui.QPainter()
-                #painter.begin(self.parent.Image)
-                #painter.drawImage(event.x() - x_offset, event.y(), image)
-                #painter.end()
-                #self.parent.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.parent.Image))
             else:
                 self.parent.update_image()
 
@@ -649,6 +645,8 @@ class MainWindow(QtGui.QMainWindow):
         if (self.displayed_note_id != -1 and self.displayed_note_id != -2):
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
+        else:
+            self.current_note.remove_png()
         #self.current_note.remove_png()
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
         self.annotationSourceTextEdit.setText(self.current_note.text)
@@ -656,16 +654,16 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_remove_note(self):
         note_id = self.documentWidget.ImgLabel.closest_id
+        self.documentWidget.ImgLabel.notes[note_id].remove_files()
+        self.documentWidget.ImgLabel.notes[note_id].remove_png()
         print 'Main remove note %d' % note_id
         if self.documentWidget.ImgLabel.current_note_id == note_id:
-            self.current_note.remove_png()
             self.annotationSourceTextEdit.setText('')
             whitePixmap = QtGui.QPixmap()
             whitePixmap.fill()
             self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
             self.documentWidget.ImgLabel.displayed_note_id = -2
             self.documentWidget.ImgLabel.current_note_id = -2
-        self.documentWidget.ImgLabel.notes[note_id].remove_files()
         del self.documentWidget.ImgLabel.notes[note_id]
         self.documentWidget.update_image()
 
@@ -732,9 +730,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         for note in self.documentWidget.ImgLabel.notes.values():
+            note.remove_files()
             note.remove_png()
-        try:
-            self.current_note.remove_png()
-        except OSError:
-            print 'Print file was already deleted'
-            pass
+        self.current_note.remove_files()
+        self.current_note.remove_png()
