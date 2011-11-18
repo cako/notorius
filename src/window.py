@@ -48,6 +48,8 @@ if PLATFORM == 'Linux':
         PROC2 = subprocess.Popen(["grep", "dots"], stdin=PROC1.stdout,
                                                    stdout=subprocess.PIPE)
         OUT = PROC2.communicate()[0]
+        PROC1.stdout.close()
+        PROC2.stdout.close()
         DPI = OUT.strip().split()[1]
         (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
     except OSError:
@@ -62,8 +64,8 @@ else:
 
 COMPILER = 'pdflatex'
 try:
-    proc = subprocess.Popen([COMPILER, "--version"], stdout=subprocess.PIPE)
-    proc.stdout.close()
+    PROC = subprocess.Popen([COMPILER, "--version"], stdout=subprocess.PIPE)
+    PROC.stdout.close()
 except OSError:
     COMPILER = 'latex'
 
@@ -74,7 +76,7 @@ class PreambleWindow(QtGui.QMainWindow):
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(DIR + 'package_window.ui', self)
-        self.ParentWindow = parent
+        self.parent = parent
         self.preamble = unicode(preamble)
 
         self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
@@ -84,7 +86,7 @@ class PreambleWindow(QtGui.QMainWindow):
                      self.slot_save)
 
     def slot_open(self):
-        self.preamble = self.ParentWindow.preamble
+        self.preamble = self.parent.preamble
         self.preambleTextEdit.setText(self.preamble)
         self.show()
 
@@ -93,7 +95,7 @@ class PreambleWindow(QtGui.QMainWindow):
 
     def slot_save(self):
         self.preamble = unicode(self.preambleTextEdit.toPlainText())
-        self.ParentWindow.preamble = self.preamble
+        self.parent.preamble = self.preamble
         self.close()
 
 class Note(object):
@@ -188,10 +190,15 @@ class Note(object):
         elif (ext == 'pdf') or (ext == 'ps'):
             try:
                 subprocess.call(imagemagick_command, stdout=subprocess.PIPE)
+                subprocess.call(["convert", "-bordercolor", "white", "-border",
+                                 "10x10", "-bordercolor", "grey", "-border",
+                                 "2x2", filename_png, filebase + 'border.png'],
+                                 stdout=subprocess.PIPE)
                 return True
             except OSError:
                 print 'You do not have imagemagick installed!'
                 return False
+
 
     def generate_source(self):
         #print 'Generating source'
@@ -221,6 +228,7 @@ class Note(object):
         #print 'Removing png'
         try:
             os.remove(self.filename.rstrip('tex') + 'png')
+            os.remove(self.filename.rstrip('tex') + 'border.png')
         except OSError:
             pass
 
@@ -239,7 +247,7 @@ class ImageLabel(QtGui.QLabel):
 
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
-        self.ParentWidget = parent
+        self.parent = parent
         self.preamble = PREAMBLE
         self.note_pos = QtCore.QPointF()
         self.note_icon_pos = QtCore.QPoint()
@@ -247,7 +255,14 @@ class ImageLabel(QtGui.QLabel):
         self.closest_id = 0
         self.notes = {}
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
-
+        self.setMouseTracking(True)
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+        #QtGui.QToolTip.setPalette(QtGui.QPalette(QtCore.Qt.white))
+        #QtGui.QToolTip.showText(QtCore.QPoint(0,0),
+        #'Alou <img src="%stest.border.png">' % DIR, self,
+        #QtCore.QRect(0,0,100,100))
+        #self.setToolTip('<img src="%stest.border.png">' % DIR)
+        #QtCore.QRect(0,0,10,10))
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self,
@@ -272,13 +287,67 @@ class ImageLabel(QtGui.QLabel):
                      self.slot_remove_note)
         self.change_menu.addAction(self.removeNoteAction)
 
-    def mouseClickEvent(self, event):
-        print event.x(), event.y()
+    def mouseMoveEvent(self,  event):
+        try:
+            width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+        except AttributeError:
+            # No PDF has been loaded yet.
+            width = 0
+        x_offset = (self.rect().width() - width)/2.0
+        if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+            if self.find_closest(event.x(), event.y()):
+                note = self.notes[self.closest_id]
+                note.generate_source()
+                #if note.generate_file():
+                    #if note.generate_from_tex():
+                        #if note.generate_png():
+                            #note.remove_files()
+                img_path =  DIR + note.filename.rstrip('tex') + 'border.png'
+                QtGui.QToolTip.showText(event.globalPos(),
+                                        'Note %d: %s <img src="%s">'
+                                        % (note.note_id, '<br />', img_path),
+                                        self)
+                #painter = QtGui.QPainter()
+                #painter.begin(self.parent.Image)
+                #painter.drawImage(event.x() - x_offset, event.y(), image)
+                #painter.end()
+                #self.parent.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.parent.Image))
+            else:
+                self.parent.update_image()
+
+    #def mouseReleaseEvent(self, event):
+        #try:
+            #width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+        #except AttributeError:
+            ## No PDF has been loaded yet.
+            #width = 0
+        #x_offset = (self.rect().width() - width)/2.0
+        #if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+            #if self.find_closest(event.x(), event.y()):
+                #print 'Click note %d' % self.closest_id
+                #note = self.notes[self.closest_id]
+                #note.generate_source()
+                ##if note.generate_file():
+                    ##if note.generate_from_tex():
+                        ##if note.generate_png():
+                            ##note.remove_files()
+                #image = QtGui.QImage(note.filename.rstrip('tex') + 'border.png')
+                #print '%s' % note.filename.rstrip('tex') + 'border.png'
+                #painter = QtGui.QPainter()
+                #painter.begin(self.parent.Image)
+                #painter.drawImage(event.x() - x_offset, event.y(), image)
+                #painter.end()
+                #self.parent.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.parent.Image))
+            #else:
+                #self.parent.update_image()
 
     def contextMenu(self, pos):
-        print self.notes.values()
-        #try:
-        width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
+        #print self.notes.values()
+        try:
+            width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+        except AttributeError:
+            # No PDF has been loaded yet.
+            width = 0
         x_offset = (self.rect().width() - width)/2.0
         if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
             if self.find_closest(pos.x(), pos.y()):
@@ -293,19 +362,15 @@ class ImageLabel(QtGui.QLabel):
                 self.add_menu.exec_(self.mapToGlobal(pos))
         else:
             print 'Not in area'
-        #except AttributeError:
-            ## No PDF has been loaded yet.
-            #print 'AttributeError'
-            #pass
 
     def find_closest(self, x, y):
         found_it = False
-        width = self.pt_to_px(self.ParentWidget.CurrentPage.pageSizeF())[0]
+        width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if len(self.notes) != 0:
             for note in self.notes.values():
-                n_x = (note.pos.x() * self.ParentWidget.scale * DPI_X / 72.0) + 11
-                n_y = (note.pos.y() * self.ParentWidget.scale * DPI_X / 72.0) + 11
+                n_x = (note.pos.x() * self.parent.scale * DPI_X/72.0) + 11
+                n_y = (note.pos.y() * self.parent.scale * DPI_X/72.0) + 11
                 dx = abs(x - x_offset - n_x)
                 dy = abs(y - n_y)
                 if dx <= 11 and dy <= 11:
@@ -321,15 +386,17 @@ class ImageLabel(QtGui.QLabel):
             note_id = 0
         self.current_note_id = note_id
         self.notes[note_id] = Note('New note', self.preamble, COMPILER,
-                                   self.ParentWidget.page, self.note_pos, note_id)
+                                   self.parent.page, self.note_pos,
+                                   note_id)
 
         x, y = self.pt_to_px(QtCore.QSize(self.note_pos.x(), self.note_pos.y()))
         painter = QtGui.QPainter()
-        painter.begin(self.ParentWidget.Image)
+        painter.begin(self.parent.Image)
         painter.drawImage(self.note_icon_pos, self.noteImage)
         painter.end()
 
-        self.ParentWidget.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.ParentWidget.Image))
+        self.parent.ImgLabel.setPixmap(
+                            QtGui.QPixmap.fromImage(self.parent.Image))
 
     def slot_edit_note(self):
         print "Editing note %d\n" % self.closest_id
@@ -342,17 +409,17 @@ class ImageLabel(QtGui.QLabel):
 
     def pt_to_px(self, qsize):
         width = qsize.width()
-        width *= self.ParentWidget.scale * DPI_X / 72.0
+        width *= self.parent.scale * DPI_X / 72.0
 
         height = qsize.height()
-        height *= self.ParentWidget.scale * DPI_Y / 72.0
+        height *= self.parent.scale * DPI_Y / 72.0
 
         return (width, height)
 
     def px_2_pt(self, x, y):
-        width = 72.0 * x/(DPI_X * self.ParentWidget.scale)
+        width = 72.0 * x/(DPI_X * self.parent.scale)
 
-        height = 72.0 * y/(DPI_Y * self.ParentWidget.scale)
+        height = 72.0 * y/(DPI_Y * self.parent.scale)
 
         return QtCore.QPointF(width, height)
 
@@ -378,7 +445,7 @@ class DocumentWidget(QtGui.QWidget):
     def __init__(self, parent = None):
         """ Initialize DocumentWidget. """
         QtGui.QWidget.__init__(self, parent)
-        self.ParentWidget = parent
+        self.parent = parent
         self.Document = None
         self.CurrentPage = None
         self.Image = None
@@ -424,10 +491,10 @@ class DocumentWidget(QtGui.QWidget):
         if self.Document is not None:
             page_size =  self.CurrentPage.pageSizeF()
             if event == 1:
-                width = self.ParentWidget.rect().width() - 18 # Window border
+                width = self.parent.rect().width() - 18 # Window border
                 self.scale = 72.0*width/(DPI_X * page_size.width())
             else:
-                height = self.ParentWidget.rect().height() - 2 # Window border
+                height = self.parent.rect().height() - 2 # Window border
                 self.scale = 72.0*height/(DPI_Y * page_size.height())
             self.update_image()
 
@@ -461,6 +528,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(DIR + 'window.ui', self)
+        self.setWindowIcon(QtGui.QIcon(DIR + 'img/note64.png'))
         self._preamble = PREAMBLE
         self.displayed_note_id = -1
 
@@ -490,12 +558,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.annotationSourceDockWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_annotation_source)
-
-        # Scroll Widget for PDF viewer
-        #self.scrollArea = QtGui.QScrollArea(self.centralwidget)
-        #self.scrollArea.setWidgetResizable(True)
-        #self.scrollArea.setObjectName("scrollArea")
-        #self.gridLayout.addWidget(self.scrollArea, 0, 0, 1, 1)
 
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
@@ -546,7 +608,8 @@ class MainWindow(QtGui.QMainWindow):
                      QtCore.SIGNAL("triggered()"), self.slot_change_note)
         #self.connect(self.documentWidget.ImgLabel.removeNoteAction,
                      #QtCore.SIGNAL("triggered()"), self.slot_remove_note)
-        self.documentWidget.ImgLabel.remove_trigger.connect(self.slot_remove_note)
+        self.documentWidget.ImgLabel.remove_trigger.connect(
+                                                    self.slot_remove_note)
 
         # Connections for Annotation Source Widget
         self.timer = QtCore.QTimer()
@@ -559,13 +622,6 @@ class MainWindow(QtGui.QMainWindow):
         self.packageWindow = PreambleWindow(self)
         self.connect(self.actionPackagesDialog, QtCore.SIGNAL("triggered()"),
                      self.packageWindow.slot_open)
-
-        # Compiling thread
-        #text = unicode(self.annotationSourceTextEdit.toPlainText())
-        #self.compileThread = CompileThread(self)
-        #self.compileThread.start()
-        #self.compileThread.text_prev = self.compileThread.text_now = text
-        #self.compileThread.callback = self.slot_compile_annotation
 
     @property
     def preamble(self):
@@ -593,7 +649,7 @@ class MainWindow(QtGui.QMainWindow):
         if (self.displayed_note_id != -1 and self.displayed_note_id != -2):
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
-        self.current_note.remove_png()
+        #self.current_note.remove_png()
         self.current_note = self.documentWidget.ImgLabel.notes[note_id]
         self.annotationSourceTextEdit.setText(self.current_note.text)
         self.slot_compile_annotation()
@@ -664,7 +720,8 @@ class MainWindow(QtGui.QMainWindow):
             self.current_note.text = text
             self.current_note.update()
             self.displayed_note_id = self.current_note.note_id
-            self.annotationWidget.ImgLabel.setPixmap(self.current_note.ImgPixmap)
+            self.annotationWidget.ImgLabel.setPixmap(
+                                            self.current_note.ImgPixmap)
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
