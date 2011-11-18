@@ -35,6 +35,7 @@ Requirements
 * [latex](http://www.latex-project.org/)
 
 One of the following:
+
 * [dvipng](http://sourceforge.net/projects/dvipng/)
 * [imagemagick](http://www.imagemagick.org/script/index.php) (necessary if you
 want to use `pdflatex` or `pslatex` (which are required for the `tikz` package)
