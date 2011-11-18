@@ -33,6 +33,7 @@ Requirements
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
 * [python-popper-qt4](http://code.google.com/p/python-poppler-qt4/)
 * [latex](http://www.latex-project.org/)
+
 One of the following:
 * [dvipng](http://sourceforge.net/projects/dvipng/)
 * [imagemagick](http://www.imagemagick.org/script/index.php) (necessary if you
