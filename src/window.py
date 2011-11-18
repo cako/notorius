@@ -305,8 +305,8 @@ class ImageLabel(QtGui.QLabel):
                 note.generate_source()
                 img_path =  DIR + note.filename.rstrip('tex') + 'border.png'
                 QtGui.QToolTip.showText(event.globalPos(),
-                                        'Note %d: %s <img src="%s">'
-                                        % (note.note_id, '<br />', img_path),
+                                        'Note %d: <br /> <img src="%s">'
+                                        % (note.note_id, img_path),
                                         self)
             else:
                 self.parent.update_image()
