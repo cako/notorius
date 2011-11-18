@@ -25,11 +25,9 @@
 
 import os
 import subprocess
-import threading
 import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
-from time import sleep
 from random import randint
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
@@ -69,6 +67,16 @@ try:
 except OSError:
     COMPILER = 'latex'
 
+TMPDIR = DIR + 'tmp'
+while os.path.isdir(TMPDIR):
+    TMPDIR = DIR + 'tmp%s/' % str(randint(0, 999))
+if PLATFORM == 'Windows':
+    TMPDIR += "\\"
+else:
+    TMPDIR += "/"
+
+os.mkdir(TMPDIR)
+
 class PreambleWindow(QtGui.QMainWindow):
     """
     PackageDialog allows for editing of packages
@@ -86,14 +94,23 @@ class PreambleWindow(QtGui.QMainWindow):
                      self.slot_save)
 
     def slot_open(self):
+        """
+        Slot for opening the Preamble window. It repopulates the window with the
+        saved preamble.
+        """
         self.preamble = self.parent.preamble
         self.preambleTextEdit.setText(self.preamble)
         self.show()
 
     def slot_cancel(self):
+        """ Slot for cancel button. Closes window without saving. """
         self.close()
 
     def slot_save(self):
+        """
+        Slot for sve button. It stores the value in the preamble QTextEdit
+        window.
+        """
         self.preamble = unicode(self.preambleTextEdit.toPlainText())
         self.parent.preamble = self.preamble
         self.close()
@@ -103,16 +120,18 @@ class Note(object):
     Note handles the creation and compilation of notes.
     """
     def __init__(self, text = None, preamble = PREAMBLE, compiler = COMPILER,
-                 page = 1, pos = None, note_id = -1):
+                 page = 1, pos = None, uid = -1):
         self.filename = self.generate_filename()
-        self.ImgPixmap = QtGui.QPixmap()
+        self.icon = QtGui.QPixmap()
 
         self.text = text
         self._preamble = preamble
         self.compiler = compiler
         self.page = page
         self.pos = pos
-        self.note_id = note_id
+        self.uid = uid
+
+        self.tex_source = u''
 
     @property
     def preamble(self):
@@ -120,10 +139,14 @@ class Note(object):
     @preamble.setter
     def preamble(self, preamble):
         self._preamble = preamble
-        self.ImageLabel = preamble
+        #self.ImageLabel = preamble
         self.update()
 
     def generate_filename(self):
+        """
+        Generates a random filename with extension .note.tex.
+        Returns the filename.
+        """
         exists = True
         while exists:
             filename = str(randint(0, 999999)) + ".note.tex"
@@ -136,6 +159,10 @@ class Note(object):
         return filename
 
     def generate_file(self):
+        """
+        Generates the file on which the source will be written.
+        Returns True if successful, False otherwise.
+        """
         #print 'Generating file'
         try:
             filehandle = open(self.filename, 'w')
@@ -147,6 +174,10 @@ class Note(object):
             return False
 
     def generate_from_tex(self):
+        """
+        Compiles the note tex file.
+        Returns True if successful, False otherwise.
+        """
         #print 'Generating dvi/pdf/ps'
         try:
             subprocess.call([self.compiler, "--interaction=nonstopmode",
@@ -157,6 +188,10 @@ class Note(object):
             return False
 
     def generate_png(self):
+        """
+        Generates the png of the note and its bordered version.
+        Returns True if successful, False otherwise.
+        """
         #print 'Generating png'
         filebase = self.filename.rstrip('tex')
         if self.compiler == 'latex':
@@ -201,6 +236,10 @@ class Note(object):
 
 
     def generate_source(self):
+        """
+        Generates the note tex source file.
+        Returns True if successful, False otherwise.
+        """
         #print 'Generating source'
         tex_source  = self.preamble  + "\n"
         tex_source += '\pagestyle{empty}' + "\n"
@@ -211,6 +250,9 @@ class Note(object):
         self.tex_source = tex_source
 
     def remove_files(self):
+        """
+        Removed auxiliary files: aux, log, tex, pdf/ps/dvi.
+        """
         #print 'Removing files'
         if self.compiler == 'latex':
             exte = 'dvi'
@@ -224,9 +266,11 @@ class Note(object):
                 os.remove(filename)
             except OSError:
                 print 'File %s was already removed.' % filename
-                pass
 
     def remove_png(self):
+        """
+        Removes the png file and its bordered version.
+        """
         #print 'Removing png'
         for ext in ['png', 'border.png']:
             filename = self.filename.rstrip('tex') + ext
@@ -234,18 +278,23 @@ class Note(object):
                 os.remove(filename)
             except OSError:
                 print 'File %s was already removed.' % filename
-                pass
 
     def update(self):
-        print 'Updating note %s' % self.note_id
+        """
+        Updates the note_pix QPixmap with the updated note.
+        """
+        #print 'Updating note %s' % self.uid
         self.generate_source()
         if self.generate_file():
             if self.generate_from_tex():
                 if self.generate_png():
                     self.remove_files()
-                    self.ImgPixmap.load(self.filename.rstrip('tex') + 'png')
+                    self.icon.load(self.filename.rstrip('tex') + 'png')
 
 class ImageLabel(QtGui.QLabel):
+    """
+    The ImageLabel class holds PDF QPixmap to be displayed in DocumentWidget.
+    """
 
     remove_trigger = QtCore.pyqtSignal()
 
@@ -255,7 +304,7 @@ class ImageLabel(QtGui.QLabel):
         self.preamble = PREAMBLE
         self.note_pos = QtCore.QPointF()
         self.note_icon_pos = QtCore.QPoint()
-        self.current_note_id = 0
+        self.current_uid = 0
         self.closest_id = 0
         self.notes = {}
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
@@ -292,8 +341,11 @@ class ImageLabel(QtGui.QLabel):
         self.change_menu.addAction(self.removeNoteAction)
 
     def mouseMoveEvent(self,  event):
+        """
+        Event handling mouse movement.
+        """
         try:
-            width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         except AttributeError:
             # No PDF has been loaded yet.
             width = 0
@@ -306,14 +358,14 @@ class ImageLabel(QtGui.QLabel):
                 img_path =  DIR + note.filename.rstrip('tex') + 'border.png'
                 QtGui.QToolTip.showText(event.globalPos(),
                                         'Note %d: <br /> <img src="%s">'
-                                        % (note.note_id, img_path),
+                                        % (note.uid, img_path),
                                         self)
             else:
                 self.parent.update_image()
 
     #def mouseReleaseEvent(self, event):
         #try:
-            #width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+            #width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         #except AttributeError:
             ## No PDF has been loaded yet.
             #width = 0
@@ -338,9 +390,12 @@ class ImageLabel(QtGui.QLabel):
                 #self.parent.update_image()
 
     def contextMenu(self, pos):
+        """
+        Event handling right-click contextMenu
+        """
         #print self.notes.values()
         try:
-            width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         except AttributeError:
             # No PDF has been loaded yet.
             width = 0
@@ -351,7 +406,7 @@ class ImageLabel(QtGui.QLabel):
                 print 'Edit'
             else:
                 print 'Add'
-                self.note_pos = self.px_2_pt(pos.x() - x_offset, pos.y())
+                self.note_pos = self.px2pt(pos.x() - x_offset, pos.y())
                 self.note_icon_pos = QtCore.QPoint(pos.x() - x_offset, pos.y())
                 #print 'Note position: ', self.note_pos
                 #print 'Mouse position', pos
@@ -360,8 +415,12 @@ class ImageLabel(QtGui.QLabel):
             print 'Not in area'
 
     def find_closest(self, x, y):
+        """
+        Finds closest note to coordinates (x, y).
+        Returns True if successful, False otherwise.
+        """
         found_it = False
-        width = self.pt_to_px(self.parent.CurrentPage.pageSizeF())[0]
+        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if len(self.notes) != 0:
             for note in self.notes.values():
@@ -370,22 +429,27 @@ class ImageLabel(QtGui.QLabel):
                 dx = abs(x - x_offset - n_x)
                 dy = abs(y - n_y)
                 if dx <= 11 and dy <= 11:
-                    self.closest_id = note.note_id
+                    self.closest_id = note.uid
                     found_it = True
                     break
         return found_it
 
     def slot_add_note(self):
-        try:
-            note_id = max(self.notes.keys()) + 1
-        except ValueError:
-            note_id = 0
-        self.current_note_id = note_id
-        self.notes[note_id] = Note('New note', self.preamble, COMPILER,
-                                   self.parent.page, self.note_pos,
-                                   note_id)
+        """
+        Slot to add a note. Creates new uid, generates note and displays the
+        icon.
+        """
 
-        x, y = self.pt_to_px(QtCore.QSize(self.note_pos.x(), self.note_pos.y()))
+        try:
+            uid = max(self.notes.keys()) + 1
+        except ValueError:
+            uid = 0
+        self.current_uid = uid
+        self.notes[uid] = Note('New note', self.preamble, COMPILER,
+                                   self.parent.page, self.note_pos,
+                                   uid)
+
+        #x, y = self.pt2px(QtCore.QSize(self.note_pos.x(), self.note_pos.y()))
         painter = QtGui.QPainter()
         painter.begin(self.parent.Image)
         painter.drawImage(self.note_icon_pos, self.noteImage)
@@ -395,15 +459,26 @@ class ImageLabel(QtGui.QLabel):
                             QtGui.QPixmap.fromImage(self.parent.Image))
 
     def slot_edit_note(self):
+        """
+        Slot to edit note. Update the current_uid with the one closest to the
+        click.
+        """
         print "Editing note %d\n" % self.closest_id
-        self.current_note_id = self.closest_id
+        self.current_uid = self.closest_id
 
     def slot_remove_note(self):
+        """
+        Slot to remove note. Update the current_uid with the one closest to the
+        click. Also emits remove_trigger sinal.
+        """
         print 'Remove note %d' % self.closest_id
-        self.current_note_id = self.closest_id
+        self.current_uid = self.closest_id
         self.remove_trigger.emit()
 
-    def pt_to_px(self, qsize):
+    def pt2px(self, qsize):
+        """
+        Convert from pt to px.
+        """
         width = qsize.width()
         width *= self.parent.scale * DPI_X / 72.0
 
@@ -412,7 +487,10 @@ class ImageLabel(QtGui.QLabel):
 
         return (width, height)
 
-    def px_2_pt(self, x, y):
+    def px2pt(self, x, y):
+        """
+        Convert from px to pt.
+        """
         width = 72.0 * x/(DPI_X * self.parent.scale)
 
         height = 72.0 * y/(DPI_Y * self.parent.scale)
@@ -503,7 +581,7 @@ class DocumentWidget(QtGui.QWidget):
 
             for note in self.ImgLabel.notes.values():
                 if note.page == self.page:
-                    #print note.note_id
+                    #print note.uid
                     x = note.pos.x()
                     x *= self.scale * DPI_X / 72.0
 
@@ -526,7 +604,7 @@ class MainWindow(QtGui.QMainWindow):
         uic.loadUi(DIR + 'window.ui', self)
         self.setWindowIcon(QtGui.QIcon(DIR + 'img/note64.png'))
         self._preamble = PREAMBLE
-        self.displayed_note_id = -1
+        self.displayed_uid = -1
 
         # File menu
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
@@ -586,7 +664,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Annotation PNG widget
         self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
-                                                 self.current_note.ImgPixmap)
+                                                 self.current_note.icon)
         self.annotationWidget.setObjectName("annotationWidget")
 
         self.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
@@ -641,30 +719,39 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_change_note(self):
-        note_id = self.documentWidget.ImgLabel.current_note_id
-        if (self.displayed_note_id != -1 and self.displayed_note_id != -2):
+        """
+        Slot to add or edit note. Replaces current note display in
+        annotationSourceTextEdit and annotationWidget with the new note.
+        """
+        uid = self.documentWidget.ImgLabel.current_uid
+        if (self.displayed_uid != -1 and self.displayed_uid != -2):
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
         else:
             self.current_note.remove_png()
         #self.current_note.remove_png()
-        self.current_note = self.documentWidget.ImgLabel.notes[note_id]
+        self.current_note = self.documentWidget.ImgLabel.notes[uid]
         self.annotationSourceTextEdit.setText(self.current_note.text)
+        self.old_text = '' # Force compilation
         self.slot_compile_annotation()
 
     def slot_remove_note(self):
-        note_id = self.documentWidget.ImgLabel.closest_id
-        self.documentWidget.ImgLabel.notes[note_id].remove_files()
-        self.documentWidget.ImgLabel.notes[note_id].remove_png()
-        print 'Main remove note %d' % note_id
-        if self.documentWidget.ImgLabel.current_note_id == note_id:
+        """
+        Removes note along with all its files. If the  current note is being
+        replaced, blank annotationSourceTextEdit and annotationWidget.
+        """
+        uid = self.documentWidget.ImgLabel.closest_id
+        self.documentWidget.ImgLabel.notes[uid].remove_files()
+        self.documentWidget.ImgLabel.notes[uid].remove_png()
+        print 'Main remove note %d' % uid
+        if self.documentWidget.ImgLabel.current_uid == uid:
             self.annotationSourceTextEdit.setText('')
-            whitePixmap = QtGui.QPixmap()
-            whitePixmap.fill()
-            self.annotationWidget.ImgLabel.setPixmap(whitePixmap)
-            self.documentWidget.ImgLabel.displayed_note_id = -2
-            self.documentWidget.ImgLabel.current_note_id = -2
-        del self.documentWidget.ImgLabel.notes[note_id]
+            white_pix = QtGui.QPixmap()
+            white_pix.fill()
+            self.annotationWidget.ImgLabel.setPixmap(white_pix)
+            self.documentWidget.ImgLabel.displayed_uid = -2
+            self.documentWidget.ImgLabel.current_uid = -2
+        del self.documentWidget.ImgLabel.notes[uid]
         self.documentWidget.update_image()
 
     def slot_hide_controls(self, event):
@@ -712,14 +799,14 @@ class MainWindow(QtGui.QMainWindow):
         """
         text = unicode(self.annotationSourceTextEdit.toPlainText())
         if (self.old_text != text and
-            self.documentWidget.ImgLabel.current_note_id  != -2):
+            self.documentWidget.ImgLabel.current_uid  != -2):
             self.old_text = text
             self.current_note.remove_png()
             self.current_note.text = text
             self.current_note.update()
-            self.displayed_note_id = self.current_note.note_id
+            self.displayed_uid = self.current_note.uid
             self.annotationWidget.ImgLabel.setPixmap(
-                                            self.current_note.ImgPixmap)
+                                            self.current_note.icon)
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
@@ -729,8 +816,15 @@ class MainWindow(QtGui.QMainWindow):
             self.documentWidget.fit_to_width_or_height(2)
 
     def closeEvent(self, event):
+        """
+        On close, cleanup files.
+        """
         for note in self.documentWidget.ImgLabel.notes.values():
             note.remove_files()
             note.remove_png()
         self.current_note.remove_files()
         self.current_note.remove_png()
+        try:
+            os.rmdir(TMPDIR)
+        except OSError:
+            print '%s could not be removed. It could be non-empty.' % TMPDIR
