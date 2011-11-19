@@ -298,6 +298,7 @@ class ImageLabel(QtGui.QLabel):
     """
 
     remove_trigger = QtCore.pyqtSignal()
+    toggle_source_trigger = QtCore.pyqtSignal()
 
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
@@ -365,14 +366,14 @@ class ImageLabel(QtGui.QLabel):
             self.drag = False
         if has_note:
             x_offset = (self.rect().width() - width)/2.0
-            if (event.x() >= x_offset) and (event.x() <= width + x_offset):
-                if self.find_closest(event.x(), event.y()):
-                    if self.drag:
-                        print 'Drag note %d' %note.uid
-                        x_offset = (self.rect().width() - width)/2.0
-                        note.pos = self.px2pt(event.x() - x_offset, event.y())
-                        self.parent.update_image()
-                    else:
+            if self.drag:
+                #print 'Drag note %d' %note.uid
+                x_offset = (self.rect().width() - width)/2.0
+                note.pos = self.px2pt(event.x() - x_offset, event.y())
+                self.parent.update_image()
+            else:
+                if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                    if self.find_closest(event.x(), event.y()):
                         note.generate_source()
                         img_path =  note.filename.rstrip('tex') + 'border.png'
                         QtGui.QToolTip.showText(event.globalPos(),
@@ -402,12 +403,31 @@ class ImageLabel(QtGui.QLabel):
     def mouseReleaseEvent(self, event):
         self.drag = False
         if self.move:
-            note = self.notes[self.closest_id]
             width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
             x_offset = (self.rect().width() - width)/2.0
+            note = self.notes[self.closest_id]
             note.pos = self.px2pt(event.x() - x_offset, event.y())
             self.parent.update_image()
             self.move = False
+
+    def mouseDoubleClickEvent(self, event):
+        try:
+            note = self.notes[self.closest_id]
+            has_note = True
+        except KeyError:
+            has_note = False
+        try:
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+        except AttributeError:
+            # No PDF has been loaded yet.
+            width = 0
+            self.drag = False
+
+        x_offset = (self.rect().width() - width)/2.0
+        if has_note and not self.drag:
+            if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                if self.find_closest(event.x(), event.y()):
+                    self.toggle_source_trigger.emit()
 
 
     #def mouseReleaseEvent(self, event):
@@ -667,7 +687,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
                      self.close)
 
-        # Windows menu
+        # View menu
         self.connect(self.actionControls,
                      QtCore.SIGNAL("toggled(bool)"),
                      self.controlsWidget.setVisible)
@@ -724,6 +744,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
         self.scrollAreaAnnotation.setWidget(self.annotationWidget.ImgLabel)
+        self.actionAnnotation.toggle()
 
         # Connections for Annotation widget
         self.connect(self.compileButton, QtCore.SIGNAL("clicked()"),
@@ -739,6 +760,9 @@ class MainWindow(QtGui.QMainWindow):
                      #QtCore.SIGNAL("triggered()"), self.slot_remove_note)
         self.documentWidget.ImgLabel.remove_trigger.connect(
                                                     self.slot_remove_note)
+        self.documentWidget.ImgLabel.toggle_source_trigger.connect(
+                                                    self.actionAnnotationSource.toggle)
+        self.actionAnnotationSource.toggle()
 
         # Connections for Annotation Source Widget
         self.timer = QtCore.QTimer()
@@ -781,6 +805,8 @@ class MainWindow(QtGui.QMainWindow):
         Slot to add or edit note. Replaces current note display in
         annotationSourceTextEdit and annotationWidget with the new note.
         """
+        self.annotationSourceDockWidget.show()
+        self.actionAnnotationSource.setChecked(True)
         uid = self.documentWidget.ImgLabel.current_uid
         if (self.displayed_uid != -1 and self.displayed_uid != -2):
             text = unicode(self.annotationSourceTextEdit.toPlainText())
@@ -812,21 +838,21 @@ class MainWindow(QtGui.QMainWindow):
         del self.documentWidget.ImgLabel.notes[uid]
         self.documentWidget.update_image()
 
-    def slot_hide_controls(self, event):
+    def slot_hide_controls(self):
         """ Slot to hide controls properly and avoid recursion. """
         if self.controlsWidget.isVisible():
             self.actionControls.setChecked(True)
         if self.annotationDockWidget.isHidden():
             self.actionControls.setChecked(False)
 
-    def slot_hide_annotation(self, event):
+    def slot_hide_annotation(self):
         """ Slot to hide annotation properly and avoid recursion. """
         if self.annotationDockWidget.isVisible():
             self.actionAnnotation.setChecked(True)
         if self.annotationDockWidget.isHidden():
             self.actionAnnotation.setChecked(False)
 
-    def slot_hide_annotation_source(self, event):
+    def slot_hide_annotation_source(self):
         """ Slot to hide annotation source properly and avoid recursion. """
         if self.annotationSourceDockWidget.isVisible():
             self.actionAnnotationSource.setChecked(True)
