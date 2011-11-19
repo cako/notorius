@@ -314,12 +314,6 @@ class ImageLabel(QtGui.QLabel):
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
         self.setMouseTracking(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
-        #QtGui.QToolTip.setPalette(QtGui.QPalette(QtCore.Qt.white))
-        #QtGui.QToolTip.showText(QtCore.QPoint(0,0),
-        #'Alou <img src="%stest.border.png">' % DIR, self,
-        #QtCore.QRect(0,0,100,100))
-        #self.setToolTip('<img src="%stest.border.png">' % DIR)
-        #QtCore.QRect(0,0,10,10))
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.connect(self,
@@ -429,33 +423,6 @@ class ImageLabel(QtGui.QLabel):
                 if self.find_closest(event.x(), event.y()):
                     self.toggle_source_trigger.emit()
 
-
-    #def mouseReleaseEvent(self, event):
-        #try:
-            #width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-        #except AttributeError:
-            ## No PDF has been loaded yet.
-            #width = 0
-        #x_offset = (self.rect().width() - width)/2.0
-        #if (event.x() >= x_offset) and (event.x() <= width + x_offset):
-            #if self.find_closest(event.x(), event.y()):
-                #print 'Click note %d' % self.closest_id
-                #note = self.notes[self.closest_id]
-                #note.generate_source()
-                ##if note.generate_file():
-                    ##if note.generate_from_tex():
-                        ##if note.generate_png():
-                            ##note.remove_files()
-                #image = QtGui.QImage(note.filename.rstrip('tex') + 'border.png')
-                #print '%s' % note.filename.rstrip('tex') + 'border.png'
-                #painter = QtGui.QPainter()
-                #painter.begin(self.parent.Image)
-                #painter.drawImage(event.x() - x_offset, event.y(), image)
-                #painter.end()
-                #self.parent.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.parent.Image))
-            #else:
-                #self.parent.update_image()
-
     def contextMenu(self, pos):
         """
         Event handling right-click contextMenu
@@ -516,7 +483,6 @@ class ImageLabel(QtGui.QLabel):
                                    self.parent.page, self.note_pos,
                                    uid)
 
-        #x, y = self.pt2px(QtCore.QSize(self.note_pos.x(), self.note_pos.y()))
         painter = QtGui.QPainter()
         painter.begin(self.parent.Image)
         painter.drawImage(self.note_icon_pos, self.noteImage)
