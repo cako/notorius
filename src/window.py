@@ -226,8 +226,9 @@ class Note(object):
             try:
                 subprocess.call(imagemagick_command, stdout=subprocess.PIPE)
                 subprocess.call(["convert", "-bordercolor", "white", "-border",
-                                 "10x10", "-bordercolor", "grey", "-border",
-                                 "2x2", filename_png, filebase + 'border.png'],
+                                 "10x10",
+                                 #"-bordercolor", "grey", "-border", "2x2",
+                                 filename_png, filebase + 'border.png'],
                                  stdout=subprocess.PIPE)
                 return True
             except OSError:
@@ -307,6 +308,8 @@ class ImageLabel(QtGui.QLabel):
         self.current_uid = 0
         self.closest_id = 0
         self.notes = {}
+        self.move = False
+        self.drag = False
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
         self.setMouseTracking(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
@@ -334,6 +337,11 @@ class ImageLabel(QtGui.QLabel):
         self.connect(self.editNoteAction, QtCore.SIGNAL("triggered()"),
                      self.slot_edit_note)
         self.change_menu.addAction(self.editNoteAction)
+        self.moveNoteAction = QtGui.QAction(self)
+        self.moveNoteAction.setText("Move annotation")
+        self.connect(self.moveNoteAction, QtCore.SIGNAL("triggered()"),
+                     self.slot_move_note)
+        self.change_menu.addAction(self.moveNoteAction)
         self.removeNoteAction = QtGui.QAction(self)
         self.removeNoteAction.setText("Remove annotation")
         self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
@@ -345,23 +353,62 @@ class ImageLabel(QtGui.QLabel):
         Event handling mouse movement.
         """
         try:
+            note = self.notes[self.closest_id]
+            has_note = True
+        except KeyError:
+            has_note = False
+        try:
             width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         except AttributeError:
             # No PDF has been loaded yet.
             width = 0
+            self.drag = False
+        if has_note:
+            x_offset = (self.rect().width() - width)/2.0
+            if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                if self.find_closest(event.x(), event.y()):
+                    if self.drag:
+                        print 'Drag note %d' %note.uid
+                        x_offset = (self.rect().width() - width)/2.0
+                        note.pos = self.px2pt(event.x() - x_offset, event.y())
+                        self.parent.update_image()
+                    else:
+                        note.generate_source()
+                        img_path =  note.filename.rstrip('tex') + 'border.png'
+                        QtGui.QToolTip.showText(event.globalPos(),
+                                                'Note %d: <br /> <img src="%s">'
+                                                % (note.uid, img_path),
+                                                self)
 
-        x_offset = (self.rect().width() - width)/2.0
-        if (event.x() >= x_offset) and (event.x() <= width + x_offset):
-            if self.find_closest(event.x(), event.y()):
-                note = self.notes[self.closest_id]
-                note.generate_source()
-                img_path =  DIR + note.filename.rstrip('tex') + 'border.png'
-                QtGui.QToolTip.showText(event.globalPos(),
-                                        'Note %d: <br /> <img src="%s">'
-                                        % (note.uid, img_path),
-                                        self)
+    def mousePressEvent(self, event):
+        if event.button() == 1: # Left click
+            try:
+                width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+            except AttributeError:
+                # No PDF has been loaded yet.
+                width = 0
+
+            x_offset = (self.rect().width() - width)/2.0
+            if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                if self.find_closest(event.x(), event.y()):
+                    self.drag = True
+                else:
+                    self.drag = False
             else:
-                self.parent.update_image()
+                self.drag = False
+        else:
+            self.drag = False
+
+    def mouseReleaseEvent(self, event):
+        self.drag = False
+        if self.move:
+            note = self.notes[self.closest_id]
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+            x_offset = (self.rect().width() - width)/2.0
+            note.pos = self.px2pt(event.x() - x_offset, event.y())
+            self.parent.update_image()
+            self.move = False
+
 
     #def mouseReleaseEvent(self, event):
         #try:
@@ -465,6 +512,12 @@ class ImageLabel(QtGui.QLabel):
         """
         print "Editing note %d\n" % self.closest_id
         self.current_uid = self.closest_id
+
+    def slot_move_note(self):
+        """
+        Slot to move note.
+        """
+        self.move = True
 
     def slot_remove_note(self):
         """
@@ -609,6 +662,8 @@ class MainWindow(QtGui.QMainWindow):
         # File menu
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_open)
+        self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
+                     self.slot_save)
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
                      self.close)
 
@@ -717,6 +772,9 @@ class MainWindow(QtGui.QMainWindow):
             self.scaleComboBox.setCurrentIndex(0)
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
             self.statusBar().showMessage('Opened file %s.' % filename)
+
+    def slot_save(self):
+        print 'Save'
 
     def slot_change_note(self):
         """
