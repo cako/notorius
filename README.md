@@ -24,8 +24,10 @@ to use. So I decided I'd write a full-blown PDF reader. This is my meager
 attempt at doing so.
 
 The project is very much a work in progress, but key parts have already been
-implemented. So far it can open PDF files and add annotations. Editing specific
-annotations, removing, moving them and saving them is yet to be written.
+implemented. So far it can open PDF files and add, edit and remove annotations.
+Exporting annotations is done using Okular's xml format. Meaning, export it as
+a .okular, and open it in Okular! Reading is not yet implemented.
+
 
 Requirements
 ------------
