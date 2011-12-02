@@ -24,10 +24,12 @@
 """ Window. """
 
 import os
+import zipfile
 import subprocess
 import popplerqt4
 from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
+from xml.etree import ElementTree as xml
 from random import randint
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
@@ -311,6 +313,7 @@ class ImageLabel(QtGui.QLabel):
         self.notes = {}
         self.move = False
         self.drag = False
+        self.control = False
         self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
         self.setMouseTracking(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
@@ -342,6 +345,21 @@ class ImageLabel(QtGui.QLabel):
         self.connect(self.removeNoteAction, QtCore.SIGNAL("triggered()"),
                      self.slot_remove_note)
         self.change_menu.addAction(self.removeNoteAction)
+        #self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+    #def wheelEvent(self, event):
+        #print self.control
+        #if self.control:
+            #print 'Zoom', event.delta()/120
+        #super(ImageLabel, self).wheelEvent(event)
+
+    #def keyPressEvent(self, event):
+        #print 'Press', event.key()
+        #self.control = True
+
+    #def keyReleaseEvent(self, event):
+        #print 'Release', event.key()
+        #self.control = False
 
     def mouseMoveEvent(self,  event):
         """
@@ -643,13 +661,14 @@ class MainWindow(QtGui.QMainWindow):
         uic.loadUi(DIR + 'window.ui', self)
         self.setWindowIcon(QtGui.QIcon(DIR + 'img/note64.png'))
         self._preamble = PREAMBLE
+        self.docpath = ''
         self.displayed_uid = -1
 
         # File menu
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_open)
-        self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
-                     self.slot_save)
+        self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),
+                     self.slot_export)
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
                      self.close)
 
@@ -741,6 +760,11 @@ class MainWindow(QtGui.QMainWindow):
         self.packageWindow = PreambleWindow(self)
         self.connect(self.actionPackagesDialog, QtCore.SIGNAL("triggered()"),
                      self.packageWindow.slot_open)
+        self.setAcceptDrops = True
+
+    def dropEvent(self, event):
+        print 'This'
+        print event.mimeData()
 
     @property
     def preamble(self):
@@ -755,16 +779,60 @@ class MainWindow(QtGui.QMainWindow):
         """ Slot for actionQuit. """
         filename = unicode(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
         if filename:
+            self.docpath = filename
             self.documentWidget.load_document(filename)
             self.pageSpinBox.setValue(1)
             self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
             self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
             self.scaleComboBox.setCurrentIndex(0)
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
+            self.actionExport.setEnabled(True)
             self.statusBar().showMessage('Opened file %s.' % filename)
 
-    def slot_save(self):
-        print 'Save'
+    def slot_export(self):
+        file_dir = os.path.dirname(self.docpath)
+        file_base = os.path.basename(self.docpath)
+        filt = QtCore.QString()
+        filename = unicode(QtGui.QFileDialog.getSaveFileName(self,
+                                            'Save archive as',
+                                            file_dir,
+                                            "ZIP (*.zip);;Okular archive (*.okular)",
+                                            filt))
+        if filename:
+            # Create the content.xml file
+            root = xml.Element('OkularArchive')
+            child_files = xml.SubElement(root, 'Files')
+            child_doc = xml.SubElement(child_files, 'DocumentFileName')
+            child_doc.text = file_base
+            child_meta = xml.SubElement(child_files, 'MetadataFileName')
+            child_meta.text = 'metadata.xml'
+            xml.ElementTree(root).write(self.docpath + '.content.xml')
+
+            # Create the metadata.xml file
+            # INCOMPLETE!!
+            root = xml.Element('documentInfo')
+            child_pglist = xml.SubElement(root, 'pageList')
+            child_annotlist = xml.SubElement(child_pglist, 'annotationList')
+            xml.ElementTree(root).write(self.docpath + '.metadata.xml')
+
+            # Create the archive
+            print filename
+            print filt
+            if ( filt == "ZIP (*.zip)" and
+                 type(filename.rstrip('.zip')) == type(u'') ):
+                print 'in here'
+                filename += '.zip'
+            elif ( filt == "Okular archive (*.okular)" and
+                 type(filename.rstrip('.okular')) == type(u'') ):
+                filename += '.okular'
+            zipf = zipfile.ZipFile(filename, 'w')
+            zipf.write(self.docpath)
+            for aux in ['.content.xml', '.metadata.xml']:
+                zipf.write(self.docpath + aux)
+                os.remove(self.docpath + aux)
+
+            zipf.close()
+            self.statusBar().showMessage('Exported to file %s.' % filename)
 
     def slot_change_note(self):
         """

@@ -10,6 +10,9 @@
     <height>909</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>false</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -221,6 +224,12 @@
     </item>
     <item row="1" column="0">
      <widget class="QScrollArea" name="scrollArea">
+      <property name="mouseTracking">
+       <bool>false</bool>
+      </property>
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
@@ -232,6 +241,9 @@
          <width>993</width>
          <height>547</height>
         </rect>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
        </property>
       </widget>
      </widget>
@@ -252,7 +264,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
     <addaction name="actionExport"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -349,8 +360,17 @@
    </property>
   </action>
   <action name="actionExport">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>&amp;Export</string>
+    <string>&amp;Export as</string>
+   </property>
+   <property name="iconText">
+    <string>Export as</string>
+   </property>
+   <property name="toolTip">
+    <string>Export as</string>
    </property>
   </action>
   <action name="actionQuit">
