@@ -31,11 +31,9 @@ from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
 from xml.etree import ElementTree as xml
 from random import randint
-try:
-    import getpass
-    USERNAME = getpass.getuser()
-except ImportError:
-    USERNAME = ''
+import getpass
+
+USERNAME = getpass.getuser()
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
 \usepackage[utf8x]{inputenc}
