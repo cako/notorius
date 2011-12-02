@@ -783,7 +783,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_open(self):
         """ Slot for actionQuit. """
-        filename = unicode(QtGui.QFileDialog.getOpenFileName(self, 'Open file'))
+        filename = unicode(
+                   QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
+                                                     "PDF files (*.pdf)"))
         if filename:
             self.docpath = filename
             self.documentWidget.load_document(filename)
