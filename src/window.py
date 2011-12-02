@@ -31,6 +31,11 @@ from PyQt4 import QtCore, QtGui, uic
 from platform import system as systemplat
 from xml.etree import ElementTree as xml
 from random import randint
+try:
+    import getpass
+    USERNAME = getpass.getuser()
+except ImportError:
+    USERNAME = ''
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
 \usepackage[utf8x]{inputenc}
@@ -602,6 +607,7 @@ class DocumentWidget(QtGui.QWidget):
         self.Document.setRenderHint(self.Document.TextAntialiasing)
         self.Document.setRenderHint(self.Document.TextHinting)
         self.CurrentPage =  self.Document.page(self.page)
+        print self.CurrentPage.pageSizeF()
         self.num_pages = self.Document.numPages()
         self.set_scale(1)
 
@@ -811,8 +817,52 @@ class MainWindow(QtGui.QMainWindow):
             # Create the metadata.xml file
             # INCOMPLETE!!
             root = xml.Element('documentInfo')
-            child_pglist = xml.SubElement(root, 'pageList')
-            child_annotlist = xml.SubElement(child_pglist, 'annotationList')
+            pagelist = xml.SubElement(root, 'pageList')
+            notes = self.documentWidget.ImgLabel.notes
+            for note in notes.values():
+                try:
+                    print xml.tostring(pagelist)
+                    page = [ pg for pg in pagelist if (
+                                int(pg.attrib['number']) == note.page) ][0]
+                    annotlist = page.find('annotationList')
+
+                except IndexError:
+                    page = xml.SubElement(pagelist, 'page')
+                    page.set('number', str(note.page))
+                    annotlist = xml.SubElement(page, 'annotationList')
+
+                annot = xml.SubElement(annotlist, 'annotation')
+                annot.set('type', '1')
+
+                base = xml.SubElement(annot, 'base')
+                base.set('creationDate', '2011-12-02T18:59:49') #BOGUS DATE
+                base.set('uniqueName', 'notorius-%d-%d' % (note.page+1, note.uid))
+                base.set('author', USERNAME)
+                base.set('contents', note.text)
+                base.set('modifyDate', '2011-12-02T18:59:49') #BOGUS DATE
+                base.set('color', '#ffff00')
+
+                boundary = xml.SubElement(base, 'boundary')
+                size = self.documentWidget.Document.page(note.page).pageSizeF()
+                posx = note.pos.x()/size.width()
+                posy = note.pos.y()/size.height()
+                boundary.set('l', str(posx))
+                boundary.set('r', str(posx + 0.03)) # "Empirical values"
+                boundary.set('b', str(posy + 0.022))
+                boundary.set('t', str(posy))
+
+                window = xml.SubElement(base, 'window')
+                window.set('width', '0')
+                window.set('flags', '-1')
+                window.set('title', '')
+                window.set('left', '0')
+                window.set('height', '0')
+                window.set('summary', 'LaTeXNote')
+                window.set('top', '0')
+
+                text = xml.SubElement(annot, 'text')
+                text.set('icon', 'None')
+
             xml.ElementTree(root).write(self.docpath + '.metadata.xml')
 
             # Create the archive
@@ -820,15 +870,14 @@ class MainWindow(QtGui.QMainWindow):
             print filt
             if ( filt == "ZIP (*.zip)" and
                  type(filename.rstrip('.zip')) == type(u'') ):
-                print 'in here'
                 filename += '.zip'
             elif ( filt == "Okular archive (*.okular)" and
                  type(filename.rstrip('.okular')) == type(u'') ):
                 filename += '.okular'
             zipf = zipfile.ZipFile(filename, 'w')
-            zipf.write(self.docpath)
+            zipf.write(self.docpath, file_base)
             for aux in ['.content.xml', '.metadata.xml']:
-                zipf.write(self.docpath + aux)
+                zipf.write(self.docpath + aux, aux[1:])
                 os.remove(self.docpath + aux)
 
             zipf.close()
