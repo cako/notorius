@@ -663,6 +663,8 @@ class MainWindow(QtGui.QMainWindow):
         self.displayed_uid = -1
 
         # File menu
+        self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
+                     self.slot_about)
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_open)
         self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),
@@ -772,6 +774,16 @@ class MainWindow(QtGui.QMainWindow):
         self._preamble = preamble
         self.current_note.preamble = preamble
         self.slot_compile_annotation()
+
+    def slot_about(self):
+        about_msg = '''
+        <p><center><font size="4"><b>Notorius</b></font></center></p>
+        <p><b>Author</b>: Carlos da Costa</p>
+        <p><b>Code at</b>: <a href="https://github.com/cako/notorius">
+                                    https://github.com/cako/notorius<a/></p>
+        <p><b>License</b>: GNU General Public License version 3</p>
+                    '''
+        QtGui.QMessageBox.about(self, "About me", about_msg)
 
     def slot_open(self):
         """ Slot for actionQuit. """
