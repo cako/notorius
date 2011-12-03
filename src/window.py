@@ -74,7 +74,7 @@ except OSError:
 
 TMPDIR = DIR + 'tmp'
 while os.path.isdir(TMPDIR):
-    TMPDIR = DIR + 'tmp%s/' % str(randint(0, 999))
+    TMPDIR = DIR + 'tmp%s' % str(randint(0, 999))
 if PLATFORM == 'Windows':
     TMPDIR += "\\"
 else:
@@ -665,6 +665,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(DIR + 'img/note64.png'))
         self._preamble = PREAMBLE
         self.docpath = ''
+        self.rmdoc = False
         self.displayed_uid = -1
 
         # File menu
@@ -749,7 +750,7 @@ class MainWindow(QtGui.QMainWindow):
         self.documentWidget.ImgLabel.remove_trigger.connect(
                                                     self.slot_remove_note)
         self.documentWidget.ImgLabel.toggle_source_trigger.connect(
-                                                    self.actionAnnotationSource.toggle)
+                                        self.actionAnnotationSource.toggle)
         self.actionAnnotationSource.toggle()
 
         # Connections for Annotation Source Widget
@@ -783,21 +784,25 @@ class MainWindow(QtGui.QMainWindow):
         filt = QtCore.QString()
         filename = unicode(
                    QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
-                        "PDF files (*.pdf);;ZIP (*.zip);;Okular (*.okular)",
+                        "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)",
                         filt))
         if filename:
             file_dir = os.path.dirname(filename)
             notes = {}
             if filt == 'ZIP (*.zip)' or filt == 'Okular (*.okular)':
+                # This function ignores non text notes! Must fix it!
+                self.rmdoc = True
                 zipf = zipfile.ZipFile(filename, 'r')
-                zipf.extractall(DIR)
+                zipf.extractall(TMPDIR)
                 # [ 'filename.pdf', 'content.xml', 'metadata.xml' ]
                 # becomes [ 'filename.pdf' ] which then becomes 'filaname.pdf'
-                # then DIR is added.
-                self.docpath = DIR + [ fl for fl in zipf.namelist() if (
-                                                fl.rsplit('.')[1] != 'xml')][0]
+                # then TMPDIR is added.
+                # Important! filename can have .okular extension!
+                self.docpath = os.path.join(TMPDIR,
+                                            [ fl for fl in zipf.namelist() if (
+                                            fl.rsplit('.')[1] != 'xml') ][0])
                 self.documentWidget.load_document(self.docpath)
-                root = xml.parse(DIR + 'metadata.xml').getroot()
+                root = xml.parse(os.path.join(TMPDIR, 'metadata.xml')).getroot()
                 for page in root.find('pageList').findall('page'):
                     pg = int(page.attrib['number'])
                     annotlist = page.find('annotationList')
@@ -838,13 +843,18 @@ class MainWindow(QtGui.QMainWindow):
                             boundary = base.find('boundary')
                             x = float(boundary.attrib['l'])
                             y = float(boundary.attrib['t'])
-                            size = self.documentWidget.Document.page(pg).pageSizeF()
-                            pos = QtCore.QPointF(x*size.width(), y*size.height())
-                            note = Note(text, preamble, page=pg, pos=pos, uid=uid)
+                            size = self.documentWidget.Document.page(
+                                                            pg).pageSizeF()
+                            pos = QtCore.QPointF(x*size.width(),
+                                                 y*size.height())
+                            note = Note(text, preamble, page = pg, pos = pos,
+                                        uid = uid)
                             notes[uid] = note
                             note.update()
                         else:
                             not_note = True
+                for aux in ['content.xml', 'metadata.xml']:
+                    os.remove(os.path.join(TMPDIR, aux))
                 if not_note:
                     QtGui.QMessageBox.warning(self, "Warning",
                             'Not loading annotations that are not text notes.')
@@ -852,6 +862,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.documentWidget.update_image()
 
             elif filt == 'PDF files (*.pdf)':
+                self.rmdoc = False
                 self.docpath = filename
                 self.documentWidget.load_document(self.docpath)
 
@@ -868,21 +879,23 @@ class MainWindow(QtGui.QMainWindow):
         file_base = os.path.basename(self.docpath)
         filt = QtCore.QString()
         filename = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                                            'Save archive as',
-                                            file_dir,
-                                            "ZIP (*.zip);;Okular archive (*.okular)",
-                                            filt))
+                                    'Save archive as',
+                                    file_dir,
+                                    "Okular archive (*.okular);;ZIP (*.zip)",
+                                    filt))
         if filename:
             # Create the content.xml file
+            content_path = os.path.join(TMPDIR, 'content.xml')
             root = xml.Element('OkularArchive')
             child_files = xml.SubElement(root, 'Files')
             child_doc = xml.SubElement(child_files, 'DocumentFileName')
             child_doc.text = file_base
             child_meta = xml.SubElement(child_files, 'MetadataFileName')
             child_meta.text = 'metadata.xml'
-            xml.ElementTree(root).write(self.docpath + '.content.xml')
+            xml.ElementTree(root).write(content_path)
 
             # Create the metadata.xml file
+            metadata_path = os.path.join(TMPDIR, 'metadata.xml')
             root = xml.Element('documentInfo')
             pagelist = xml.SubElement(root, 'pageList')
             notes = self.documentWidget.ImgLabel.notes
@@ -903,7 +916,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 base = xml.SubElement(annot, 'base')
                 base.set('creationDate', '2011-12-02T18:59:49') #BOGUS DATE
-                base.set('uniqueName', 'notorius-%d-%d' % (note.page+1, note.uid))
+                base.set('uniqueName', 'notorius-%d-%d' % (note.page, note.uid))
                 base.set('author', USERNAME)
                 base.set('contents', note.text)
                 base.set('preamble', note.preamble)
@@ -931,7 +944,7 @@ class MainWindow(QtGui.QMainWindow):
                 text = xml.SubElement(annot, 'text')
                 text.set('icon', 'None')
 
-            xml.ElementTree(root).write(self.docpath + '.metadata.xml')
+            xml.ElementTree(root).write(metadata_path)
 
             # Create the archive
             if ( filt == "ZIP (*.zip)" and
@@ -942,9 +955,10 @@ class MainWindow(QtGui.QMainWindow):
                 filename += '.okular'
             zipf = zipfile.ZipFile(filename, 'w')
             zipf.write(self.docpath, file_base)
-            for aux in ['.content.xml', '.metadata.xml']:
-                zipf.write(self.docpath + aux, aux[1:])
-                os.remove(self.docpath + aux)
+            for (path, name) in [(content_path, 'content.xml'),
+                                 (metadata_path, 'metadata.xml')]:
+                zipf.write(path, name)
+                os.remove(path)
 
             zipf.close()
             self.statusBar().showMessage('Exported to file %s.' % filename)
@@ -1057,6 +1071,8 @@ class MainWindow(QtGui.QMainWindow):
             note.remove_png()
         self.current_note.remove_files()
         self.current_note.remove_png()
+        if self.rmdoc:
+            os.remove(self.docpath)
         try:
             os.rmdir(TMPDIR)
         except OSError:
