@@ -60,10 +60,6 @@ if PLATFORM == 'Linux':
 else:
     DPI_X = DPI_X = 96
 
-if PLATFORM == 'Windows':
-    DIR = os.path.dirname(__file__)+"\\"
-else:
-    DIR = os.path.dirname(__file__)+"/"
 
 COMPILER = 'pdflatex'
 try:
@@ -72,14 +68,10 @@ try:
 except OSError:
     COMPILER = 'latex'
 
-TMPDIR = DIR + 'tmp'
+DIR = os.path.dirname(__file__)
+TMPDIR = os.path.join(DIR, 'tmp')
 while os.path.isdir(TMPDIR):
-    TMPDIR = DIR + 'tmp%s' % str(randint(0, 999))
-if PLATFORM == 'Windows':
-    TMPDIR += "\\"
-else:
-    TMPDIR += "/"
-
+    TMPDIR = os.path.join(DIR, 'tmp%s' % str(randint(0, 999)))
 os.mkdir(TMPDIR)
 
 class PreambleWindow(QtGui.QMainWindow):
@@ -88,7 +80,7 @@ class PreambleWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(DIR + 'package_window.ui', self)
+        uic.loadUi(os.path.join(DIR, 'package_window.ui'), self)
         self.parent = parent
         self.preamble = unicode(preamble)
 
@@ -154,7 +146,8 @@ class Note(object):
         """
         exists = True
         while exists:
-            filename = str(randint(0, 999999)) + ".note.tex"
+            filename = os.path.join(TMPDIR,
+                                    str(randint(0, 999999)) + ".note.tex")
             try:
                 filehandle = open(filename, 'w')
                 exists = False
@@ -186,6 +179,7 @@ class Note(object):
         #print 'Generating dvi/pdf/ps'
         try:
             subprocess.call([self.compiler, "--interaction=nonstopmode",
+                             "-output-directory", TMPDIR,
                              self.filename], stdout=subprocess.PIPE)
             return True
         except OSError:
@@ -317,7 +311,7 @@ class ImageLabel(QtGui.QLabel):
         self.move = False
         self.drag = False
         self.control = False
-        self.noteImage = QtGui.QImage(DIR + 'img/note22.png')
+        self.noteImage = QtGui.QImage(os.path.join(DIR, 'img/note22.png'))
         self.setMouseTracking(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
 
@@ -661,8 +655,8 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(DIR + 'window.ui', self)
-        self.setWindowIcon(QtGui.QIcon(DIR + 'img/note64.png'))
+        uic.loadUi(os.path.join(DIR, 'window.ui'), self)
+        self.setWindowIcon(QtGui.QIcon(os.path.join(DIR, 'img/note64.png')))
         self._preamble = PREAMBLE
         self.docpath = ''
         self.rmdoc = False
@@ -981,6 +975,8 @@ class MainWindow(QtGui.QMainWindow):
         self.annotationSourceTextEdit.setText(self.current_note.text)
         self.old_text = '' # Force compilation
         self.slot_compile_annotation()
+        for note in self.documentWidget.ImgLabel.notes.values():
+            print note.text
 
     def slot_remove_note(self):
         """
