@@ -605,7 +605,6 @@ class DocumentWidget(QtGui.QWidget):
         self.Document.setRenderHint(self.Document.TextAntialiasing)
         self.Document.setRenderHint(self.Document.TextHinting)
         self.CurrentPage =  self.Document.page(self.page)
-        print self.CurrentPage.pageSizeF()
         self.num_pages = self.Document.numPages()
         self.set_scale(1)
 
@@ -781,12 +780,55 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_open(self):
         """ Slot for actionQuit. """
+        filt = QtCore.QString()
         filename = unicode(
                    QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
-                                                     "PDF files (*.pdf)"))
+                        "PDF files (*.pdf);;ZIP (*.zip);;Okular (*.okular)",
+                        filt))
         if filename:
-            self.docpath = filename
-            self.documentWidget.load_document(filename)
+            file_dir = os.path.dirname(filename)
+            notes = {}
+            if filt == 'ZIP (*.zip)' or filt == 'Okular (*.okular)':
+                zipf = zipfile.ZipFile(filename, 'r')
+                zipf.extractall(DIR)
+                # [ 'filename.pdf', 'content.xml', 'metadata.xml' ]
+                # becomes [ 'filename.pdf' ] which then becomes 'filaname.pdf'
+                # then DIR is added.
+                self.docpath = DIR + [ fl for fl in zipf.namelist() if (
+                                                fl.rsplit('.')[1] == 'pdf')][0]
+                self.documentWidget.load_document(self.docpath)
+                root = xml.parse(DIR + 'metadata.xml').getroot()
+                for page in root.find('pageList').findall('page'):
+                    pg = int(page.attrib['number'])
+                    annotlist = page.find('annotationList')
+                    for annot in annotlist.findall('annotation'):
+                        base = annot.find('base')
+                        author = base.attrib['author']
+                        text = base.attrib['contents']
+                        cdate = base.attrib['creationDate']
+                        mdate = base.attrib['modifyDate']
+                        try:
+                            preamble = base.attrib['preamble']
+                        except KeyError:
+                            preamble = PREAMBLE
+                        uname = base.attrib['uniqueName']
+                        uid = int(uname.rsplit('-')[-1]) #notorius-1-0 becomes 0
+
+                        boundary = base.find('boundary')
+                        x = float(boundary.attrib['l'])
+                        y = float(boundary.attrib['t'])
+                        size = self.documentWidget.Document.page(pg).pageSizeF()
+                        pos = QtCore.QPointF(x*size.width(), y*size.height())
+                        note = Note(text, preamble, page=pg, pos=pos, uid=uid)
+                        notes[uid] = note
+                        note.update()
+                self.documentWidget.ImgLabel.notes = notes
+                self.documentWidget.update_image()
+
+            elif filt == 'PDF files (*.pdf)':
+                self.docpath = filename
+                self.documentWidget.load_document(self.docpath)
+
             self.pageSpinBox.setValue(1)
             self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
             self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
@@ -815,7 +857,6 @@ class MainWindow(QtGui.QMainWindow):
             xml.ElementTree(root).write(self.docpath + '.content.xml')
 
             # Create the metadata.xml file
-            # INCOMPLETE!!
             root = xml.Element('documentInfo')
             pagelist = xml.SubElement(root, 'pageList')
             notes = self.documentWidget.ImgLabel.notes
@@ -839,6 +880,7 @@ class MainWindow(QtGui.QMainWindow):
                 base.set('uniqueName', 'notorius-%d-%d' % (note.page+1, note.uid))
                 base.set('author', USERNAME)
                 base.set('contents', note.text)
+                base.set('preamble', note.preamble)
                 base.set('modifyDate', '2011-12-02T18:59:49') #BOGUS DATE
                 base.set('color', '#ffff00')
 
@@ -866,8 +908,6 @@ class MainWindow(QtGui.QMainWindow):
             xml.ElementTree(root).write(self.docpath + '.metadata.xml')
 
             # Create the archive
-            print filename
-            print filt
             if ( filt == "ZIP (*.zip)" and
                  type(filename.rstrip('.zip')) == type(u'') ):
                 filename += '.zip'
