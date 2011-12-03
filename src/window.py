@@ -74,7 +74,7 @@ except OSError:
 
 TMPDIR = DIR + 'tmp'
 while os.path.isdir(TMPDIR):
-    TMPDIR = DIR + 'tmp%s/' % str(randint(0, 999))
+    TMPDIR = DIR + 'tmp%s' % str(randint(0, 999))
 if PLATFORM == 'Windows':
     TMPDIR += "\\"
 else:
@@ -427,7 +427,7 @@ class ImageLabel(QtGui.QLabel):
 
     def mouseDoubleClickEvent(self, event):
         try:
-            note = self.notes[self.closest_id]
+            self.notes[self.closest_id]
             has_note = True
         except KeyError:
             has_note = False
@@ -749,7 +749,7 @@ class MainWindow(QtGui.QMainWindow):
         self.documentWidget.ImgLabel.remove_trigger.connect(
                                                     self.slot_remove_note)
         self.documentWidget.ImgLabel.toggle_source_trigger.connect(
-                                                    self.actionAnnotationSource.toggle)
+                                            self.actionAnnotationSource.toggle)
         self.actionAnnotationSource.toggle()
 
         # Connections for Annotation Source Widget
@@ -779,11 +779,11 @@ class MainWindow(QtGui.QMainWindow):
         self.slot_compile_annotation()
 
     def slot_open(self):
-        """ Slot for actionQuit. """
+        """ Slot to open file. Can be PDF, ZIP (okular) or Okular. """
         filt = QtCore.QString()
         filename = unicode(
                    QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
-                        "PDF files (*.pdf);;ZIP (*.zip);;Okular (*.okular)",
+                    "PDF files (*.pdf);;Okular archive (*.okular);;ZIP (*.zip)",
                         filt))
         if filename:
             file_dir = os.path.dirname(filename)
@@ -794,6 +794,7 @@ class MainWindow(QtGui.QMainWindow):
                 # [ 'filename.pdf', 'content.xml', 'metadata.xml' ]
                 # becomes [ 'filename.pdf' ] which then becomes 'filaname.pdf'
                 # then DIR is added.
+                # Important! Also possible for filename to have .okular ext!
                 self.docpath = DIR + [ fl for fl in zipf.namelist() if (
                                                 fl.rsplit('.')[1] != 'xml')][0]
                 self.documentWidget.load_document(self.docpath)
@@ -838,9 +839,12 @@ class MainWindow(QtGui.QMainWindow):
                             boundary = base.find('boundary')
                             x = float(boundary.attrib['l'])
                             y = float(boundary.attrib['t'])
-                            size = self.documentWidget.Document.page(pg).pageSizeF()
-                            pos = QtCore.QPointF(x*size.width(), y*size.height())
-                            note = Note(text, preamble, page=pg, pos=pos, uid=uid)
+                            size = self.documentWidget.Document.page(
+                                                                pg).pageSizeF()
+                            pos = QtCore.QPointF(x*size.width(),
+                                                 y*size.height())
+                            note = Note(text, preamble, page=pg, pos=pos,
+                                        uid=uid)
                             notes[uid] = note
                             note.update()
                         else:
@@ -864,14 +868,18 @@ class MainWindow(QtGui.QMainWindow):
             self.statusBar().showMessage('Opened file %s.' % filename)
 
     def slot_export(self):
+        """
+        Slot to export pdf file and annotations to Okular specific filename
+        or ZIP file (following the same format).
+        """
         file_dir = os.path.dirname(self.docpath)
         file_base = os.path.basename(self.docpath)
         filt = QtCore.QString()
         filename = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                                            'Save archive as',
-                                            file_dir,
-                                            "ZIP (*.zip);;Okular archive (*.okular)",
-                                            filt))
+                                    'Save archive as',
+                                    file_dir,
+                                    "Okular archive (*.okular);;ZIP (*.zip)",
+                                    filt))
         if filename:
             # Create the content.xml file
             root = xml.Element('OkularArchive')
@@ -880,7 +888,7 @@ class MainWindow(QtGui.QMainWindow):
             child_doc.text = file_base
             child_meta = xml.SubElement(child_files, 'MetadataFileName')
             child_meta.text = 'metadata.xml'
-            xml.ElementTree(root).write(self.docpath + '.content.xml')
+            xml.ElementTree(root).write(TMPDIR + 'content.xml')
 
             # Create the metadata.xml file
             root = xml.Element('documentInfo')
@@ -903,7 +911,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 base = xml.SubElement(annot, 'base')
                 base.set('creationDate', '2011-12-02T18:59:49') #BOGUS DATE
-                base.set('uniqueName', 'notorius-%d-%d' % (note.page+1, note.uid))
+                base.set('uniqueName', 'notorius-%d-%d' % (note.page, note.uid))
                 base.set('author', USERNAME)
                 base.set('contents', note.text)
                 base.set('preamble', note.preamble)
@@ -931,7 +939,7 @@ class MainWindow(QtGui.QMainWindow):
                 text = xml.SubElement(annot, 'text')
                 text.set('icon', 'None')
 
-            xml.ElementTree(root).write(self.docpath + '.metadata.xml')
+            xml.ElementTree(root).write(TMPDIR + 'metadata.xml')
 
             # Create the archive
             if ( filt == "ZIP (*.zip)" and
@@ -942,9 +950,9 @@ class MainWindow(QtGui.QMainWindow):
                 filename += '.okular'
             zipf = zipfile.ZipFile(filename, 'w')
             zipf.write(self.docpath, file_base)
-            for aux in ['.content.xml', '.metadata.xml']:
-                zipf.write(self.docpath + aux, aux[1:])
-                os.remove(self.docpath + aux)
+            for aux in ['content.xml', 'metadata.xml']:
+                zipf.write(TMPDIR + aux, aux)
+                os.remove(TMPDIR + aux)
 
             zipf.close()
             self.statusBar().showMessage('Exported to file %s.' % filename)
