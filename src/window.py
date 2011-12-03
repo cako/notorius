@@ -23,15 +23,15 @@
 
 """ Window. """
 
-import os
-import zipfile
-import subprocess
-import popplerqt4
-from PyQt4 import QtCore, QtGui, uic
-from platform import system as systemplat
-from xml.etree import ElementTree as xml
-from random import randint
 import getpass
+import os
+import popplerqt4
+import subprocess
+import zipfile
+from platform import system as systemplat
+from PyQt4 import QtCore, QtGui, uic
+from random import randint
+from xml.etree import ElementTree as xml
 
 USERNAME = getpass.getuser()
 
@@ -795,33 +795,59 @@ class MainWindow(QtGui.QMainWindow):
                 # becomes [ 'filename.pdf' ] which then becomes 'filaname.pdf'
                 # then DIR is added.
                 self.docpath = DIR + [ fl for fl in zipf.namelist() if (
-                                                fl.rsplit('.')[1] == 'pdf')][0]
+                                                fl.rsplit('.')[1] != 'xml')][0]
                 self.documentWidget.load_document(self.docpath)
                 root = xml.parse(DIR + 'metadata.xml').getroot()
                 for page in root.find('pageList').findall('page'):
                     pg = int(page.attrib['number'])
                     annotlist = page.find('annotationList')
+                    not_note = False
                     for annot in annotlist.findall('annotation'):
-                        base = annot.find('base')
-                        author = base.attrib['author']
-                        text = base.attrib['contents']
-                        cdate = base.attrib['creationDate']
-                        mdate = base.attrib['modifyDate']
-                        try:
-                            preamble = base.attrib['preamble']
-                        except KeyError:
-                            preamble = PREAMBLE
-                        uname = base.attrib['uniqueName']
-                        uid = int(uname.rsplit('-')[-1]) #notorius-1-0 becomes 0
+                        if annot.attrib['type'] == "1":
+                            base = annot.find('base')
+                            try:
+                                author = base.attrib['author']
+                            except KeyError:
+                                author = ''
+                            try:
+                                text = base.attrib['contents']
+                            except KeyError:
+                                text = ''
+                            try:
+                                cdate = base.attrib['creationDate']
+                            except KeyError:
+                                cdate = ''
+                            try:
+                                mdate = base.attrib['modifyDate']
+                            except KeyError:
+                                mdate = ''
+                            try:
+                                preamble = base.attrib['preamble']
+                            except KeyError:
+                                preamble = PREAMBLE
+                            try:
+                                uname = base.attrib['uniqueName']
+                                # notorius-1-0 becomes 0
+                                uid = int(uname.rsplit('-')[-1])
+                            except KeyError:
+                                try:
+                                    uid = max(a.keys())
+                                except ValueError:
+                                    uid = 0
 
-                        boundary = base.find('boundary')
-                        x = float(boundary.attrib['l'])
-                        y = float(boundary.attrib['t'])
-                        size = self.documentWidget.Document.page(pg).pageSizeF()
-                        pos = QtCore.QPointF(x*size.width(), y*size.height())
-                        note = Note(text, preamble, page=pg, pos=pos, uid=uid)
-                        notes[uid] = note
-                        note.update()
+                            boundary = base.find('boundary')
+                            x = float(boundary.attrib['l'])
+                            y = float(boundary.attrib['t'])
+                            size = self.documentWidget.Document.page(pg).pageSizeF()
+                            pos = QtCore.QPointF(x*size.width(), y*size.height())
+                            note = Note(text, preamble, page=pg, pos=pos, uid=uid)
+                            notes[uid] = note
+                            note.update()
+                        else:
+                            not_note = True
+                if not_note:
+                    QtGui.QMessageBox.warning(self, "Warning",
+                            'Not loading annotations that are not text notes.')
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
 
