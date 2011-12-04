@@ -790,15 +790,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_gui_open(self):
         """ Slot for actionOpen. """
-        filt = QtCore.QString()
         filename = unicode(
                    QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
-                        "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)",
-                        filt))
+                        "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)"))
         self.load_file(filename)
 
     def load_file(self, filename = None):
-        if filename is not None:
+        if filename:
             self.nextPageButton.setEnabled(True)
             self.previousPageButton.setEnabled(True)
             self.pageSpinBox.setEnabled(True)
@@ -806,13 +804,13 @@ class MainWindow(QtGui.QMainWindow):
             self.scaleComboBox.setEnabled(True)
             file_dir = os.path.dirname(filename)
             notes = {}
-            if filt == 'ZIP (*.zip)' or filt == 'Okular (*.okular)':
+            if filename.endswith('.zip') or filename.endswith('.okular'):
                 # This function ignores non text notes! Must fix it!
                 self.rmdoc = True
                 zipf = zipfile.ZipFile(filename, 'r')
                 zipf.extractall(TMPDIR)
                 # [ 'filename.pdf', 'content.xml', 'metadata.xml' ]
-                # becomes [ 'filename.pdf' ] which then becomes 'filaname.pdf'
+                # becomes [ 'filename.pdf' ] which then becomes 'filename.pdf'
                 # then TMPDIR is added.
                 # Important! filename can have .okular extension!
                 self.docpath = os.path.join(TMPDIR,
@@ -878,7 +876,9 @@ class MainWindow(QtGui.QMainWindow):
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
 
-            elif filt == 'PDF files (*.pdf)':
+            else:
+                if not filename.endswith('.pdf'):
+                    print "Treating file as pdf!"
                 self.rmdoc = False
                 self.docpath = filename
                 self.documentWidget.load_document(self.docpath)
