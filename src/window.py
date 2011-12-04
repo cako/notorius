@@ -652,7 +652,7 @@ class DocumentWidget(QtGui.QWidget):
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, document = None):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(os.path.join(DIR, 'window.ui'), self)
@@ -666,7 +666,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
                      self.slot_about)
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
-                     self.slot_open)
+                     self.slot_gui_open)
         self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),
                      self.slot_export)
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
@@ -762,6 +762,9 @@ class MainWindow(QtGui.QMainWindow):
                      self.packageWindow.slot_open)
         self.setAcceptDrops = True
 
+        if document is not None:
+            self.load_file(document)
+
     def dropEvent(self, event):
         print 'This'
         print event.mimeData()
@@ -785,14 +788,17 @@ class MainWindow(QtGui.QMainWindow):
                     '''
         QtGui.QMessageBox.about(self, "About me", about_msg)
 
-    def slot_open(self):
-        """ Slot for actionQuit. """
+    def slot_gui_open(self):
+        """ Slot for actionOpen. """
         filt = QtCore.QString()
         filename = unicode(
                    QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
                         "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)",
                         filt))
-        if filename:
+        self.load_file(filename)
+
+    def load_file(self, filename = None):
+        if filename is not None:
             self.nextPageButton.setEnabled(True)
             self.previousPageButton.setEnabled(True)
             self.pageSpinBox.setEnabled(True)
@@ -884,6 +890,8 @@ class MainWindow(QtGui.QMainWindow):
             self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
             self.actionExport.setEnabled(True)
             self.statusBar().showMessage('Opened file %s.' % filename)
+        else:
+            print 'No file to load!'
 
     def slot_export(self):
         file_dir = os.path.dirname(self.docpath)
