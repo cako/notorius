@@ -32,6 +32,9 @@ from platform import system as systemplat
 from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
+#from gtk import icon_theme_get_default
+
+#ICON_THEME = icon_theme_get_default()
 
 USERNAME = getpass.getuser()
 
@@ -662,9 +665,16 @@ class MainWindow(QtGui.QMainWindow):
         self.rmdoc = False
         self.displayed_uid = -1
 
-        # File menu
-        self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
-                     self.slot_about)
+        # Toolbar icons
+        self.actionOpen.setIcon(QtGui.QIcon.fromTheme("document-open"))
+        self.actionExport.setIcon(QtGui.QIcon.fromTheme("document-save-as"))
+        self.actionQuit.setIcon(QtGui.QIcon.fromTheme("application-exit"))
+
+        self.actionPackagesDialog.setIcon(QtGui.QIcon.fromTheme("preferences-other"))
+
+        self.actionAbout.setIcon(QtGui.QIcon.fromTheme("help-about"))
+
+        # Toolbar connections
         self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_gui_open)
         self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),
@@ -672,7 +682,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
                      self.close)
 
-        # View menu
         self.connect(self.actionControls,
                      QtCore.SIGNAL("toggled(bool)"),
                      self.controlsWidget.setVisible)
@@ -682,7 +691,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionAnnotation,
                      QtCore.SIGNAL("toggled(bool)"),
                      self.annotationDockWidget.setVisible)
-
         self.connect(self.controlsWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_controls)
@@ -692,6 +700,9 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.annotationSourceDockWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_annotation_source)
+
+        self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
+                     self.slot_about)
 
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
@@ -784,7 +795,8 @@ class MainWindow(QtGui.QMainWindow):
         <p><b>Author</b>: Carlos da Costa</p>
         <p><b>Code at</b>: <a href="https://github.com/cako/notorius">
                                     https://github.com/cako/notorius<a/></p>
-        <p><b>License</b>: GNU General Public License version 3</p>
+        <p><b>License</b>: <a href="http://www.gnu.org/licenses/gpl-3.0.txt">
+                                    GNU General Public License version 3</a></p>
                     '''
         QtGui.QMessageBox.about(self, "About me", about_msg)
 

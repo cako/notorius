@@ -368,6 +368,9 @@
    <property name="text">
     <string>&amp;Open</string>
    </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
@@ -387,10 +390,16 @@
    <property name="toolTip">
     <string>Export as</string>
    </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionQuit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionControls">
@@ -430,10 +439,16 @@
    <property name="text">
     <string>&amp;About</string>
    </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionPackagesDialog">
    <property name="text">
     <string>LaTeX packages</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionPrevious">

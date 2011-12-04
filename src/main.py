@@ -28,9 +28,9 @@ from PyQt4 import QtGui
 
 if __name__ == '__main__':
     APP = QtGui.QApplication(sys.argv)
-    documents = sys.argv[1:]
-    if documents:
-        for doc in documents:
+    DOCS = sys.argv[1:]
+    if DOCS:
+        for doc in DOCS:
             WINDOW = window.MainWindow(document=doc)
             WINDOW.show()
     else:
