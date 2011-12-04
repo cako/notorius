@@ -793,6 +793,11 @@ class MainWindow(QtGui.QMainWindow):
                         "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)",
                         filt))
         if filename:
+            self.nextPageButton.setEnabled(True)
+            self.previousPageButton.setEnabled(True)
+            self.pageSpinBox.setEnabled(True)
+            self.scaleSpinBox.setEnabled(True)
+            self.scaleComboBox.setEnabled(True)
             file_dir = os.path.dirname(filename)
             notes = {}
             if filt == 'ZIP (*.zip)' or filt == 'Okular (*.okular)':

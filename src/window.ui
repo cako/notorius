@@ -11,18 +11,24 @@
    </rect>
   </property>
   <property name="acceptDrops">
-   <bool>false</bool>
+   <bool>true</bool>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="acceptDrops">
+    <bool>true</bool>
+   </property>
    <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
      <widget class="QWidget" name="controlsWidget" native="true">
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="0">
         <widget class="QPushButton" name="previousPageButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="maximumSize">
           <size>
            <width>98</width>
@@ -37,7 +43,7 @@
        <item row="1" column="1">
         <widget class="QSpinBox" name="pageSpinBox">
          <property name="enabled">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="frame">
           <bool>true</bool>
@@ -58,6 +64,9 @@
        </item>
        <item row="1" column="3">
         <widget class="QPushButton" name="nextPageButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>98</width>
@@ -164,6 +173,9 @@
        </item>
        <item row="1" column="10">
         <widget class="QComboBox" name="scaleComboBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="minimumSize">
           <size>
            <width>102</width>
@@ -195,6 +207,9 @@
        </item>
        <item row="1" column="11">
         <widget class="QDoubleSpinBox" name="scaleSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="inputMethodHints">
           <set>Qt::ImhFormattedNumbersOnly</set>
          </property>
@@ -228,7 +243,7 @@
        <bool>false</bool>
       </property>
       <property name="acceptDrops">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
@@ -243,7 +258,7 @@
         </rect>
        </property>
        <property name="acceptDrops">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
