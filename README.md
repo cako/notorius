@@ -25,8 +25,8 @@ attempt at doing so.
 
 The project is very much a work in progress, but key parts have already been
 implemented. So far it can open PDF files and add, edit and remove annotations.
-Exporting annotations is done using Okular's xml format. Meaning, export it as
-a .okular, and open it in Okular! Reading is not yet implemented.
+Exporting annotations is done using Okular's format. Notorius can load and
+export .okular files.
 
 
 Requirements
