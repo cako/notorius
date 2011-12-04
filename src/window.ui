@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Notorius</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="acceptDrops">
@@ -301,7 +301,7 @@
     <property name="title">
      <string>Preferences</string>
     </property>
-    <addaction name="actionPackagesDialog"/>
+    <addaction name="actionPreambleEditor"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuWindows"/>
@@ -443,9 +443,9 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionPackagesDialog">
+  <action name="actionPreambleEditor">
    <property name="text">
-    <string>LaTeX packages</string>
+    <string>Preamble Editor</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
