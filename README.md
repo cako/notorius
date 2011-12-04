@@ -48,6 +48,11 @@ Installation
 Once you've got the python libraries, simply run main.py. Following are the
 installation instructions for the libraries.
 
+### Windows
+
+This has been tested with 32 bits Windows XP, but it should work on newer
+systems.
+
 Before anything make sure you have a LaTeX distribution. A common one for
 Windows is MikTeX, download it from the following website.
 
@@ -66,15 +71,6 @@ file.
 
     https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe
 
-If you want to install ImageMagick (which is highly recommended), download and
-install the following file.
-
-    http://www.imagemagick.org/download/binaries/ImageMagick-6.7.3-10-Q16-windows-dll.exe
-
-
-### Windows
-
-This has been tested with 32 bits Windows XP.
 
 ### Ubuntu
 
