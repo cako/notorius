@@ -664,6 +664,7 @@ class MainWindow(QtGui.QMainWindow):
         self.docpath = ''
         self.rmdoc = False
         self.displayed_uid = -1
+        self.okular_notes = []
 
         # Toolbar icons
         self.actionOpen.setIcon(QtGui.QIcon.fromTheme("document-open"))
@@ -816,6 +817,7 @@ class MainWindow(QtGui.QMainWindow):
             self.scaleComboBox.setEnabled(True)
             file_dir = os.path.dirname(filename)
             notes = {}
+            self.okular_notes = []
             if filename.endswith('.zip') or filename.endswith('.okular'):
                 # This function ignores non text notes! Must fix it!
                 self.rmdoc = True
@@ -879,12 +881,13 @@ class MainWindow(QtGui.QMainWindow):
                             notes[uid] = note
                             note.update()
                         else:
-                            not_note = True
+                            self.okular_notes += [ annot ]
                 for aux in ['content.xml', 'metadata.xml']:
                     os.remove(os.path.join(TMPDIR, aux))
-                if not_note:
+                if self.okular_notes:
                     QtGui.QMessageBox.warning(self, "Warning",
                             'Not loading annotations that are not text notes.')
+                    print xml.tostring(self.okular_notes[0])
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
 
@@ -932,7 +935,6 @@ class MainWindow(QtGui.QMainWindow):
             notes = self.documentWidget.ImgLabel.notes
             for note in notes.values():
                 try:
-                    print xml.tostring(pagelist)
                     page = [ pg for pg in pagelist if (
                                 int(pg.attrib['number']) == note.page) ][0]
                     annotlist = page.find('annotationList')
@@ -974,6 +976,27 @@ class MainWindow(QtGui.QMainWindow):
 
                 text = xml.SubElement(annot, 'text')
                 text.set('icon', 'None')
+
+            # Write okular notes that are not displayed
+            for annot in self.okular_notes:
+                pg_n = False
+                try:
+                    pg_n = annot.find('base').attrib['uniqueName'].split('-')[1]
+                except IndexError:
+                    # Did not find page, ignore
+                    pass
+                if pg_n:
+                    try:
+                        page = [ pg for pg in pagelist if (
+                                    pg.attrib['number'] == pg_n) ][0]
+                        annotlist = page.find('annotationList')
+
+                    except IndexError:
+                        page = xml.SubElement(pagelist, 'page')
+                        page.set('number', str(note.page))
+                        annotlist = xml.SubElement(page, 'annotationList')
+                    annotlist.append(annot)
+
 
             xml.ElementTree(root).write(metadata_path)
 
