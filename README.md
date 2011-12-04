@@ -56,20 +56,20 @@ systems.
 Before anything make sure you have a LaTeX distribution. A common one for
 Windows is MikTeX, download it from the following website.
 
-    [`http://miktex.org/2.9/setup`](http://miktex.org/2.9/setup)
+[`http://miktex.org/2.9/setup`](http://miktex.org/2.9/setup)
 
 Let's install Python. Download and install the following file.
 
-    [`http://python.org/ftp/python/2.7.2/python-2.7.2.msi`](http://python.org/ftp/python/2.7.2/python-2.7.2.msi)
+[`http://python.org/ftp/python/2.7.2/python-2.7.2.msi`](http://python.org/ftp/python/2.7.2/python-2.7.2.msi)
 
 Now, let's install PyQt4. Download and install the following file.
 
-    [`http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe`](http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe)
+[`http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe`](http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe)
 
 Finally, to  install python-poppler-qt4, download and install the following
 file.
 
-    [`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
+[`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
 
 
 ### Ubuntu
