@@ -56,7 +56,9 @@ systems.
 Before anything make sure you have a LaTeX distribution. A common one for
 Windows is MikTeX, download it from the following website.
 
-    [http://miktex.org/2.9/setup](http://miktex.org/2.9/setup)
+    [http://miktex.org/2.9/setup][]
+
+[miktex]: http://miktex.org/2.9/setup
 
 Let's install Python. Download and install the following file.
 
