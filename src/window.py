@@ -1128,12 +1128,12 @@ class MainWindow(QtGui.QMainWindow):
     def slot_prev_page(self):
         """ Slot to go to the previous page. """
         self.pageSpinBox.setValue(self.pageSpinBox.value() - 1)
-        self.scrollArea.ensureVisible(0,0)
+        self.scrollArea.ensureVisible(0, 0)
 
     def slot_next_page(self):
         """ Slot to go to the next page. """
         self.pageSpinBox.setValue(self.pageSpinBox.value() + 1)
-        self.scrollArea.ensureVisible(0,0)
+        self.scrollArea.ensureVisible(0, 0)
 
     def slot_scale(self, event):
         """ Slot to change the scale. """
