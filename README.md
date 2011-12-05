@@ -6,7 +6,8 @@ Introduction
 
 Introducing notorius!
 
-![notorius][http://i.imgur.com/98h5k.png]
+![notorius][img1]
+[img1]: http://i.imgur.com/98h5k.png
 
 Annotating PDF files is hard. There are a few options, but none of them are good
 enough for the technically inclined. Most PDF annotators use either ASCII text
