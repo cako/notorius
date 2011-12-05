@@ -56,7 +56,7 @@ if PLATFORM == 'Linux':
         DPI = OUT.strip().split()[1]
         (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
     except OSError:
-        DPI_X = DPI_X = 96
+        DPI_X = DPI_Y = 96
 else:
     DPI_X = DPI_Y = 96
 
