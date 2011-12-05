@@ -49,7 +49,7 @@ Once you've got the python libraries, simply run main.py.
 
 On Windows, this is done by:
 
-   C:\Python27\pythonw.exe C:\Path\To\main.py
+    C:\Python27\pythonw.exe C:\Path\To\main.py
 
 On Linux, this is done by:
 
