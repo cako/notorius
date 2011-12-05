@@ -821,11 +821,66 @@ class MainWindow(QtGui.QMainWindow):
     def slot_gui_open(self):
         """ Slot for actionOpen. """
         filename = unicode(
-                   QtGui.QFileDialog.getOpenFileName(self, 'Open file', DIR,
-                        "PDF files (*.pdf);;Okular (*.okular);;ZIP (*.zip)"))
+                   QtGui.QFileDialog.getOpenFileName(self, 'Open file',
+                   os.getenv('HOME'),
+"PDF files (*.pdf);;Okular (*.okular);;ZIP archive (*.zip);; XML file (*.xml)"))
         self.load_file(filename)
 
     def load_file(self, filename = None):
+        def parse_metadata(root):
+            notes = {}
+            for page in root.find('pageList').findall('page'):
+                pg = int(page.attrib['number'])
+                annotlist = page.find('annotationList')
+                not_note = False
+                for annot in annotlist.findall('annotation'):
+                    if annot.attrib['type'] == "1":
+                        base = annot.find('base')
+                        try:
+                            author = base.attrib['author']
+                        except KeyError:
+                            author = ''
+                        try:
+                            text = base.attrib['contents']
+                        except KeyError:
+                            text = ''
+                        try:
+                            cdate = base.attrib['creationDate']
+                        except KeyError:
+                            cdate = ''
+                        try:
+                            mdate = base.attrib['modifyDate']
+                        except KeyError:
+                            mdate = ''
+                        try:
+                            preamble = base.attrib['preamble']
+                        except KeyError:
+                            preamble = PREAMBLE
+                        try:
+                            uname = base.attrib['uniqueName']
+                            # notorius-1-0 becomes 0
+                            uid = int(uname.rsplit('-')[-1])
+                        except KeyError:
+                            try:
+                                uid = max(a.keys())
+                            except ValueError:
+                                uid = 0
+
+                        boundary = base.find('boundary')
+                        x = float(boundary.attrib['l'])
+                        y = float(boundary.attrib['t'])
+                        size = self.documentWidget.Document.page(
+                                                        pg).pageSizeF()
+                        pos = QtCore.QPointF(x*size.width(),
+                                             y*size.height())
+                        note = Note(text, preamble, page = pg, pos = pos,
+                                    uid = uid)
+                        notes[uid] = note
+                        note.update()
+                    else:
+                        self.okular_notes += [ annot ]
+            return notes
+        loaded = False
         if filename:
             self.nextPageButton.setEnabled(True)
             self.previousPageButton.setEnabled(True)
@@ -833,10 +888,8 @@ class MainWindow(QtGui.QMainWindow):
             self.scaleSpinBox.setEnabled(True)
             self.scaleComboBox.setEnabled(True)
             file_dir = os.path.dirname(filename)
-            notes = {}
             self.okular_notes = []
             if filename.endswith('.zip') or filename.endswith('.okular'):
-                # This function ignores non text notes! Must fix it!
                 self.rmdoc = True
                 zipf = zipfile.ZipFile(filename, 'r')
                 zipf.extractall(TMPDIR)
@@ -847,58 +900,11 @@ class MainWindow(QtGui.QMainWindow):
                 self.docpath = os.path.join(TMPDIR,
                                             [ fl for fl in zipf.namelist() if (
                                             fl.rsplit('.')[1] != 'xml') ][0])
+                # Must insert try statement!
                 self.documentWidget.load_document(self.docpath)
+                loaded = True
                 root = xml.parse(os.path.join(TMPDIR, 'metadata.xml')).getroot()
-                for page in root.find('pageList').findall('page'):
-                    pg = int(page.attrib['number'])
-                    annotlist = page.find('annotationList')
-                    not_note = False
-                    for annot in annotlist.findall('annotation'):
-                        if annot.attrib['type'] == "1":
-                            base = annot.find('base')
-                            try:
-                                author = base.attrib['author']
-                            except KeyError:
-                                author = ''
-                            try:
-                                text = base.attrib['contents']
-                            except KeyError:
-                                text = ''
-                            try:
-                                cdate = base.attrib['creationDate']
-                            except KeyError:
-                                cdate = ''
-                            try:
-                                mdate = base.attrib['modifyDate']
-                            except KeyError:
-                                mdate = ''
-                            try:
-                                preamble = base.attrib['preamble']
-                            except KeyError:
-                                preamble = PREAMBLE
-                            try:
-                                uname = base.attrib['uniqueName']
-                                # notorius-1-0 becomes 0
-                                uid = int(uname.rsplit('-')[-1])
-                            except KeyError:
-                                try:
-                                    uid = max(a.keys())
-                                except ValueError:
-                                    uid = 0
-
-                            boundary = base.find('boundary')
-                            x = float(boundary.attrib['l'])
-                            y = float(boundary.attrib['t'])
-                            size = self.documentWidget.Document.page(
-                                                            pg).pageSizeF()
-                            pos = QtCore.QPointF(x*size.width(),
-                                                 y*size.height())
-                            note = Note(text, preamble, page = pg, pos = pos,
-                                        uid = uid)
-                            notes[uid] = note
-                            note.update()
-                        else:
-                            self.okular_notes += [ annot ]
+                notes = parse_metadata(root)
                 for aux in ['content.xml', 'metadata.xml']:
                     os.remove(os.path.join(TMPDIR, aux))
                 if self.okular_notes:
@@ -907,47 +913,66 @@ class MainWindow(QtGui.QMainWindow):
                     print xml.tostring(self.okular_notes[0])
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
-
+                self.setWindowTitle('Notorius - %s' % os.path.basename(filename))
+            elif filename.endswith('.xml'):
+                if self.docpath == '':
+                    QtGui.QMessageBox.warning(self, "Warning",
+                                            'You need to load a PDF first!.')
+                    loaded = False
+                else:
+                    self.rmdoc = False
+                    root = xml.parse(filename).getroot()
+                    self.documentWidget.ImgLabel.notes = parse_metadata(root)
+                    self.documentWidget.update_image()
+                    loaded = True
+                    self.setWindowTitle(
+                        'Notorius - %s + %s' % (os.path.basename(self.docpath),
+                                                os.path.basename(filename)))
             else:
                 if not filename.endswith('.pdf'):
                     print "Treating file as pdf!"
                 self.rmdoc = False
                 self.docpath = filename
                 self.documentWidget.load_document(self.docpath)
+                self.setWindowTitle('Notorius - %s' % os.path.basename(filename))
+                loaded = True
 
-            self.pageSpinBox.setValue(1)
-            self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
-            self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
-            self.scaleComboBox.setCurrentIndex(0)
-            self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
-            self.actionExport.setEnabled(True)
-            self.statusBar().showMessage('Opened file %s.' % filename)
+            if loaded:
+                self.pageSpinBox.setValue(1)
+                self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
+                self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
+                self.scaleComboBox.setCurrentIndex(0)
+                self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
+                self.actionExport.setEnabled(True)
+                self.statusBar().showMessage('Opened file %s.' % filename)
         else:
             print 'No file to load!'
-        self.setWindowTitle('Notorius - ' + os.path.basename(filename))
 
     def slot_export(self):
         file_dir = os.path.dirname(self.docpath)
         file_base = os.path.basename(self.docpath)
         filt = QtCore.QString()
         filename = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                                    'Save archive as',
-                                    file_dir,
-                                    "Okular archive (*.okular);;ZIP (*.zip)",
-                                    filt))
+            'Save archive as', file_dir,
+            "Okular archive (*.okular);;ZIP archive (*.zip);;XML file (*.xml)",
+            filt))
         if filename:
             # Create the content.xml file
-            content_path = os.path.join(TMPDIR, 'content.xml')
-            root = xml.Element('OkularArchive')
-            child_files = xml.SubElement(root, 'Files')
-            child_doc = xml.SubElement(child_files, 'DocumentFileName')
-            child_doc.text = file_base
-            child_meta = xml.SubElement(child_files, 'MetadataFileName')
-            child_meta.text = 'metadata.xml'
-            xml.ElementTree(root).write(content_path)
+            if filt != 'XML file (*.xml)':
+                content_path = os.path.join(TMPDIR, 'content.xml')
+                root = xml.Element('OkularArchive')
+                child_files = xml.SubElement(root, 'Files')
+                child_doc = xml.SubElement(child_files, 'DocumentFileName')
+                child_doc.text = file_base
+                child_meta = xml.SubElement(child_files, 'MetadataFileName')
+                child_meta.text = 'metadata.xml'
+                xml.ElementTree(root).write(content_path)
 
             # Create the metadata.xml file
-            metadata_path = os.path.join(TMPDIR, 'metadata.xml')
+            if filt != 'XML file (*.xml)':
+                metadata_path = os.path.join(TMPDIR, 'metadata.xml')
+            else:
+                metadata_path = filename
             root = xml.Element('documentInfo')
             pagelist = xml.SubElement(root, 'pageList')
             notes = self.documentWidget.ImgLabel.notes
@@ -1019,20 +1044,25 @@ class MainWindow(QtGui.QMainWindow):
             xml.ElementTree(root).write(metadata_path)
 
             # Create the archive
-            if ( filt == "ZIP (*.zip)" and not filename.endswith('.zip')):
+            if ( filt == "ZIP archive (*.zip)" and not
+                                                filename.endswith('.zip') ):
                 filename += '.zip'
             elif ( filt == "Okular archive (*.okular)" and not
-                                                filename.endswith('.okular')):
+                                                filename.endswith('.okular') ):
                 filename += '.okular'
-            zipf = zipfile.ZipFile(filename, 'w')
-            zipf.write(self.docpath, file_base)
-            for (path, name) in [(content_path, 'content.xml'),
-                                 (metadata_path, 'metadata.xml')]:
-                zipf.write(path, name)
-                os.remove(path)
+            elif ( filt == 'XML file (*.xml)' and not
+                                                filename.endswith('.xml') ):
+                filename += '.xml'
+            if filt != 'XML file (*.xml)':
+                zipf = zipfile.ZipFile(filename, 'w')
+                zipf.write(self.docpath, file_base)
+                for (path, name) in [(content_path, 'content.xml'),
+                                     (metadata_path, 'metadata.xml')]:
+                    zipf.write(path, name)
+                    os.remove(path)
 
-            zipf.close()
-            self.statusBar().showMessage('Exported to file %s.' % filename)
+                zipf.close()
+            self.statusBar().showMessage('Exported annotations to file %s.' % filename)
 
     def slot_change_note(self):
         """

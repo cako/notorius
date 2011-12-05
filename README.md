@@ -74,7 +74,7 @@ file.
 
 ### Ubuntu
 
-First, you'll need a LaTeX installation, if you don't already have one.
+First, you'll need a LaTeX distribution, if you don't already have one.
 
     sudo apt-get install texlive-latex-base
 
