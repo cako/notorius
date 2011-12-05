@@ -378,11 +378,6 @@
     <bool>true</bool>
    </property>
   </action>
-  <action name="actionSave">
-   <property name="text">
-    <string>&amp;Save a copy</string>
-   </property>
-  </action>
   <action name="actionExport">
    <property name="enabled">
     <bool>false</bool>
@@ -455,11 +450,6 @@
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>
-   </property>
-  </action>
-  <action name="actionPrevious">
-   <property name="text">
-    <string>Previous</string>
    </property>
   </action>
  </widget>

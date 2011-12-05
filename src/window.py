@@ -285,7 +285,8 @@ class Note(object):
             try:
                 os.remove(filename)
             except OSError:
-                print 'File %s was already removed.' % filename
+                #print 'File %s was already removed.' % filename
+                pass
 
     def remove_png(self):
         """
@@ -297,7 +298,8 @@ class Note(object):
             try:
                 os.remove(filename)
             except OSError:
-                print 'File %s was already removed.' % filename
+                #print 'File %s was already removed.' % filename
+                pass
 
     def update(self):
         """
@@ -363,20 +365,6 @@ class ImageLabel(QtGui.QLabel):
                      self.slot_remove_note)
         self.change_menu.addAction(self.removeNoteAction)
         #self.setFocusPolicy(QtCore.Qt.StrongFocus)
-
-    #def wheelEvent(self, event):
-        #print self.control
-        #if self.control:
-            #print 'Zoom', event.delta()/120
-        #super(ImageLabel, self).wheelEvent(event)
-
-    #def keyPressEvent(self, event):
-        #print 'Press', event.key()
-        #self.control = True
-
-    #def keyReleaseEvent(self, event):
-        #print 'Release', event.key()
-        #self.control = False
 
     def mouseMoveEvent(self,  event):
         """
@@ -472,16 +460,12 @@ class ImageLabel(QtGui.QLabel):
         if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
             if self.find_closest(pos.x(), pos.y()):
                 self.change_menu.exec_(self.mapToGlobal(pos))
-                print 'Edit'
             else:
-                print 'Add'
                 self.note_pos = self.px2pt(pos.x() - x_offset, pos.y())
                 self.note_icon_pos = QtCore.QPoint(pos.x() - x_offset, pos.y())
                 #print 'Note position: ', self.note_pos
                 #print 'Mouse position', pos
                 self.add_menu.exec_(self.mapToGlobal(pos))
-        else:
-            print 'Not in area'
 
     def find_closest(self, x, y):
         """
@@ -531,7 +515,7 @@ class ImageLabel(QtGui.QLabel):
         Slot to edit note. Update the current_uid with the one closest to the
         click.
         """
-        print "Editing note %d\n" % self.closest_id
+        #print "Editing note %d\n" % self.closest_id
         self.current_uid = self.closest_id
 
     def slot_move_note(self):
@@ -545,7 +529,7 @@ class ImageLabel(QtGui.QLabel):
         Slot to remove note. Update the current_uid with the one closest to the
         click. Also emits remove_trigger sinal.
         """
-        print 'Remove note %d' % self.closest_id
+        #print 'Remove note %d' % self.closest_id
         self.remove_trigger.emit()
 
     def pt2px(self, qsize):
@@ -820,9 +804,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_gui_open(self):
         """ Slot for actionOpen. """
+        if PLATFORM == 'Windows':
+            home = os.getenv('HOMEPATH')
+        else:
+            home = os.getenv('HOME')
+        if not home:
+            home = DIR
         filename = unicode(
-                   QtGui.QFileDialog.getOpenFileName(self, 'Open file',
-                   os.getenv('HOME'),
+                   QtGui.QFileDialog.getOpenFileName(self, 'Open file', home,
 "PDF files (*.pdf);;Okular (*.okular);;ZIP archive (*.zip);; XML file (*.xml)"))
         self.load_file(filename)
 
@@ -910,7 +899,6 @@ class MainWindow(QtGui.QMainWindow):
                 if self.okular_notes:
                     QtGui.QMessageBox.warning(self, "Warning",
                             'Not loading annotations that are not text notes.')
-                    print xml.tostring(self.okular_notes[0])
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
                 self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
@@ -1074,7 +1062,6 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAnnotationSource.setChecked(True)
         uid = self.documentWidget.ImgLabel.current_uid
         if (self.displayed_uid != -1 and self.displayed_uid != -2):
-            print 'Displayed note is valid. Saving text.'
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
         self.current_note = self.documentWidget.ImgLabel.notes[uid]
@@ -1085,8 +1072,8 @@ class MainWindow(QtGui.QMainWindow):
                                                         % self.current_note.uid)
         self.old_text = ''
         self.slot_compile_annotation()
-        for note in self.documentWidget.ImgLabel.notes.values():
-            print note.text
+        #for note in self.documentWidget.ImgLabel.notes.values():
+            #print note.text
 
     def slot_remove_note(self):
         """
@@ -1094,10 +1081,10 @@ class MainWindow(QtGui.QMainWindow):
         replaced, blank annotationSourceTextEdit and annotationWidget.
         """
         uid = self.documentWidget.ImgLabel.closest_id
-        print 'Current note: %d' % self.documentWidget.ImgLabel.current_uid
+        #print 'Current note: %d' % self.documentWidget.ImgLabel.current_uid
         self.documentWidget.ImgLabel.notes[uid].remove_files()
         self.documentWidget.ImgLabel.notes[uid].remove_png()
-        print 'Main remove note %d' % uid
+        #print 'Main remove note %d' % uid
         if self.documentWidget.ImgLabel.current_uid == uid:
             self.annotationSourceTextEdit.setText('')
             white_pix = QtGui.QPixmap()
@@ -1192,4 +1179,5 @@ class MainWindow(QtGui.QMainWindow):
         try:
             os.rmdir(TMPDIR)
         except OSError:
-            print '%s could not be removed. It could be non-empty.' % TMPDIR
+            #print 'Directory %s could not be removed. It could be non-empty.' % TMPDIR
+            pass
