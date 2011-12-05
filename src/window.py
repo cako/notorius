@@ -33,6 +33,8 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
+VERSION = '0.1'
+
 USERNAME = getpass.getuser()
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
@@ -793,13 +795,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_about(self):
         about_msg = '''
-        <p><center><font size="4"><b>Notorius</b></font></center></p>
+        <p><center><font size="4"><b>Notorius %s</b></font></center></p>
         <p><b>Author</b>: Carlos da Costa</p>
         <p><b>Code at</b>: <a href="https://github.com/cako/notorius">
                                     https://github.com/cako/notorius<a/></p>
         <p><b>License</b>: <a href="http://www.gnu.org/licenses/gpl-3.0.txt">
                                     GNU General Public License version 3</a></p>
-                    '''
+                    ''' % VERSION
         QtGui.QMessageBox.about(self, "About me", about_msg)
 
     def slot_gui_open(self):
