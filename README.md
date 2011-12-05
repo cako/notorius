@@ -59,7 +59,7 @@ Following are the installation instructions for the libraries.
 
 ### Windows
 
-This has been tested with 32 bits Windows XP, but it should work on newer
+This has been tested with 32-bit Windows XP, but it should work on newer
 systems.
 
 Before anything make sure you have a LaTeX distribution. A common one for
