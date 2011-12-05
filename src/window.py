@@ -32,9 +32,6 @@ from platform import system as systemplat
 from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
-#from gtk import icon_theme_get_default
-
-#ICON_THEME = icon_theme_get_default()
 
 USERNAME = getpass.getuser()
 
@@ -1022,11 +1019,10 @@ class MainWindow(QtGui.QMainWindow):
             xml.ElementTree(root).write(metadata_path)
 
             # Create the archive
-            if ( filt == "ZIP (*.zip)" and
-                 type(filename.rstrip('.zip')) == type(u'') ):
+            if ( filt == "ZIP (*.zip)" and not filename.endswith('.zip')):
                 filename += '.zip'
-            elif ( filt == "Okular archive (*.okular)" and
-                 type(filename.rstrip('.okular')) == type(u'') ):
+            elif ( filt == "Okular archive (*.okular)" and not
+                                                filename.endswith('.okular')):
                 filename += '.okular'
             zipf = zipfile.ZipFile(filename, 'w')
             zipf.write(self.docpath, file_base)
