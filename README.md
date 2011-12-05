@@ -30,7 +30,7 @@ archives or XML files.
 
 Requirements
 ------------
-* [python](http://www.python.org/download/) (versions 2.6 or 2.7)
+* [Python](http://www.python.org/download/) (versions 2.6 or 2.7)
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
 * [python-popper-qt4](http://code.google.com/p/python-poppler-qt4/)
 * [LaTeX](http://www.latex-project.org/)
