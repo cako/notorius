@@ -6,26 +6,25 @@ Introduction
 
 Introducing notorius!
 
-![notorius][img1]
+![notorius][http://i.imgur.com/98h5k.png]
 
-Annotating PDF files is hard. There are a few
-options, but none of them are good enough for the
-technically inclined. Most PDF annotators use either
-ASCII text or free form tools.
+Annotating PDF files is hard. There are a few options, but none of them are good
+enough for the technically inclined. Most PDF annotators use either ASCII text
+or free form tools.
 
-The question arises: How does one annotate a PDF
-with LaTeX notation. The answer is, you simply
-don't.
+The question arises: How does one annotate a PDF with LaTeX notation. The answer
+is, you simply don't. To repair the situation, I've written Notorius.
 
-I've written a couple of scripts (first
+Before, I'd written a couple of scripts (first
 [annotate_pdf](https://github.com/cako/annotate_pdf) and then
 [pdfnoter](https://github.com/cako/pdfnoter)) but they were half-assed and hard
 to use. So I decided I'd write a full-blown PDF reader. This is my meager
 attempt at doing so.
 
-The project is very much a work in progress, but key parts have already been
-implemented. So far it can open PDF files and add, edit and remove annotations.
-Opening and exporting annotations is done using Okular's format.
+The project is very much a work in progress, though as of now, it is entirely
+functional. You can open PDF, and Okular files, or simply import notes contained
+in an XML file on top of an already open PDF. Saving is also done through Okular
+archives or XML files.
 
 
 Requirements
@@ -38,15 +37,24 @@ Requirements
 One of the following:
 
 * [dvipng](http://sourceforge.net/projects/dvipng/)
-* [imagemagick](http://www.imagemagick.org/script/index.php) (necessary if you
+* [image magic](http://www.imagemagick.org/script/index.php) (necessary if you
 want to use `pdflatex` or `pslatex` (which are required for the `tikz` package,
-for example)
+for example), but currently unavailable for Windows.)
 
 
 Installation
 ------------
-Once you've got the python libraries, simply run main.py. Following are the
-installation instructions for the libraries.
+Once you've got the python libraries, simply run main.py.
+
+On Windows, this is done by:
+
+   C:\Python27\pythonw.exe C:\Path\To\main.py
+
+On Linux, this is done by:
+
+    /path/to/main.py
+
+Following are the installation instructions for the libraries.
 
 ### Windows
 
@@ -105,7 +113,6 @@ After the installation, the `-dev` libraries and `g++` can be uninstalled:
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
     sudo apt-get autoremove
 
-[img1]: http://i.imgur.com/98h5k.png
 
 License
 ------- 
