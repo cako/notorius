@@ -82,7 +82,7 @@ elif PLATFORM == 'Windows':
     if not TMPDIR:
         TMPDIR = DIR
 else:
-        TMPDIR = DIR
+    TMPDIR = DIR
 
 TMPDIR_WHILE = TMPDIR
 while os.path.isdir(TMPDIR_WHILE):
@@ -96,7 +96,7 @@ class PreambleWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(os.path.join(DIR, 'package_window.ui'), self)
+        uic.loadUi(os.path.join(DIR, 'preamble_editor_window.ui'), self)
         self.parent = parent
         self.preamble = unicode(preamble)
 
@@ -546,7 +546,6 @@ class ImageLabel(QtGui.QLabel):
         click. Also emits remove_trigger sinal.
         """
         print 'Remove note %d' % self.closest_id
-        self.current_uid = self.closest_id
         self.remove_trigger.emit()
 
     def pt2px(self, qsize):
@@ -688,7 +687,8 @@ class MainWindow(QtGui.QMainWindow):
         self.actionExport.setIcon(QtGui.QIcon.fromTheme("document-save-as"))
         self.actionQuit.setIcon(QtGui.QIcon.fromTheme("application-exit"))
 
-        self.actionPreambleEditor.setIcon(QtGui.QIcon.fromTheme("preferences-other"))
+        self.actionPreambleEditor.setIcon(QtGui.QIcon.fromTheme(
+                                                        "preferences-other"))
 
         self.actionAbout.setIcon(QtGui.QIcon.fromTheme("help-about"))
 
@@ -762,7 +762,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Connections for Annotation widget
         self.connect(self.compileButton, QtCore.SIGNAL("clicked()"),
-                     self.slot_compile_annotation)
+                     self.slot_force_compile)
 
         # Annotation Source Widget
         self.annotationSourceTextEdit.setText(WELCOME)
@@ -786,9 +786,9 @@ class MainWindow(QtGui.QMainWindow):
         self.old_text = ''
 
         # Package editor
-        self.packageWindow = PreambleWindow(self)
+        self.preambleEditorWindow = PreambleWindow(self)
         self.connect(self.actionPreambleEditor, QtCore.SIGNAL("triggered()"),
-                     self.packageWindow.slot_open)
+                     self.preambleEditorWindow.slot_open)
         self.setAcceptDrops = True
 
         if document is not None:
@@ -913,7 +913,7 @@ class MainWindow(QtGui.QMainWindow):
                     print xml.tostring(self.okular_notes[0])
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
-                self.setWindowTitle('Notorius - %s' % os.path.basename(filename))
+                self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
             elif filename.endswith('.xml'):
                 if self.docpath == '':
                     QtGui.QMessageBox.warning(self, "Warning",
@@ -934,7 +934,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.rmdoc = False
                 self.docpath = filename
                 self.documentWidget.load_document(self.docpath)
-                self.setWindowTitle('Notorius - %s' % os.path.basename(filename))
+                self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
                 loaded = True
 
             if loaded:
@@ -942,7 +942,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
                 self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
                 self.scaleComboBox.setCurrentIndex(0)
-                self.maxPageLabel.setText("/ "+str(self.documentWidget.num_pages))
+                self.maxPageLabel.setText("/ %s" %self.documentWidget.num_pages)
                 self.actionExport.setEnabled(True)
                 self.statusBar().showMessage('Opened file %s.' % filename)
         else:
@@ -1062,7 +1062,8 @@ class MainWindow(QtGui.QMainWindow):
                     os.remove(path)
 
                 zipf.close()
-            self.statusBar().showMessage('Exported annotations to file %s.' % filename)
+            self.statusBar().showMessage('Exported annotations to file %s.'
+                                                                    % filename)
 
     def slot_change_note(self):
         """
@@ -1073,14 +1074,16 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAnnotationSource.setChecked(True)
         uid = self.documentWidget.ImgLabel.current_uid
         if (self.displayed_uid != -1 and self.displayed_uid != -2):
+            print 'Displayed note is valid. Saving text.'
             text = unicode(self.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
-        else:
-            self.current_note.remove_png()
-        #self.current_note.remove_png()
         self.current_note = self.documentWidget.ImgLabel.notes[uid]
         self.annotationSourceTextEdit.setText(self.current_note.text)
-        self.old_text = '' # Force compilation
+        self.annotationSourceDockWidget.setWindowTitle('Note %d'
+                                                        % self.current_note.uid)
+        self.annotationDockWidget.setWindowTitle('Note %d'
+                                                        % self.current_note.uid)
+        self.old_text = ''
         self.slot_compile_annotation()
         for note in self.documentWidget.ImgLabel.notes.values():
             print note.text
@@ -1091,6 +1094,7 @@ class MainWindow(QtGui.QMainWindow):
         replaced, blank annotationSourceTextEdit and annotationWidget.
         """
         uid = self.documentWidget.ImgLabel.closest_id
+        print 'Current note: %d' % self.documentWidget.ImgLabel.current_uid
         self.documentWidget.ImgLabel.notes[uid].remove_files()
         self.documentWidget.ImgLabel.notes[uid].remove_png()
         print 'Main remove note %d' % uid
@@ -1101,6 +1105,8 @@ class MainWindow(QtGui.QMainWindow):
             self.annotationWidget.ImgLabel.setPixmap(white_pix)
             self.documentWidget.ImgLabel.displayed_uid = -2
             self.documentWidget.ImgLabel.current_uid = -2
+            self.annotationSourceDockWidget.setWindowTitle('')
+            self.annotationDockWidget.setWindowTitle('')
         del self.documentWidget.ImgLabel.notes[uid]
         self.documentWidget.update_image()
 
@@ -1143,6 +1149,11 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.scaleSpinBox.setEnabled(False)
             self.documentWidget.fit_to_width_or_height(event)
+
+    def slot_force_compile(self):
+        """ Slot to force compilation through the compileButton. """
+        self.old_text = ''
+        self.slot_force_compile()
 
     def slot_compile_annotation(self):
         """

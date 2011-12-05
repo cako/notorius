@@ -310,8 +310,11 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="annotationSourceDockWidget">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <property name="windowTitle">
-    <string>Annotation Source</string>
+    <string>Welcome Note</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -350,8 +353,11 @@
      <height>53</height>
     </size>
    </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <property name="windowTitle">
-    <string>Annotation</string>
+    <string>Welcome Note</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
