@@ -28,6 +28,13 @@ from PyQt4 import QtGui
 
 if __name__ == '__main__':
     APP = QtGui.QApplication(sys.argv)
-    WINDOW = window.MainWindow()
-    WINDOW.show()
+    DOCS = sys.argv[1:]
+    if DOCS:
+        for doc in DOCS:
+            WINDOW = window.MainWindow(document=doc)
+            WINDOW.show()
+    else:
+        WINDOW = window.MainWindow()
+        WINDOW.show()
+
     sys.exit(APP.exec_())
