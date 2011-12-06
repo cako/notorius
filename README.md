@@ -76,13 +76,21 @@ Now run it! Don't worry about dvipng, it comes with LaTeX.
 
 ### Ubuntu
 
-You can either download and run the install script found
-[here](http://dl.dropbox.com/u/3087188/notorius_ubuntu_install.sh) by
+# Automated
 
+For an automated installation, download and run the install script found
+[in the downloads](http://dl.dropbox.com/u/3087188/notorius_ubuntu_install.sh).
+For the clueless,
+
+    chmod +x notorius_ubuntu_install.sh
     ./notorius_ubuntu_install.sh
 
-or follow the steps below. If you used the install script, the Notorius will be
-in the menu under Applications>Office.
+Notorius will be in the menu under Applications>Office, but it can also be run
+from the command line with
+
+    notorius
+
+# Manual
 
 First, you'll need a LaTeX distribution, if you don't already have one.
 
