@@ -110,6 +110,10 @@ It can also be installed with
 
     sudo pip install python-poppler-qt4
 
+If you want (recommended) install ImageMagick with
+
+    sudo apt-get install imagemagick
+
 After the installation, the `-dev` libraries and `g++` can be uninstalled:
 
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++

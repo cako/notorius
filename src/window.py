@@ -1072,8 +1072,7 @@ class MainWindow(QtGui.QMainWindow):
                                                         % self.current_note.uid)
         self.annotationDockWidget.setWindowTitle('Note %d'
                                                         % self.current_note.uid)
-        self.old_text = ''
-        self.slot_compile_annotation()
+        self.slot_force_compile()
         #for note in self.documentWidget.ImgLabel.notes.values():
             #print note.text
 
@@ -1142,7 +1141,7 @@ class MainWindow(QtGui.QMainWindow):
     def slot_force_compile(self):
         """ Slot to force compilation through the compileButton. """
         self.old_text = ''
-        self.slot_force_compile()
+        self.slot_compile_annotation()
 
     def slot_compile_annotation(self):
         """
