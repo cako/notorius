@@ -50,7 +50,7 @@ On Windows, this is done by:
 
     C:\Python27\pythonw.exe C:\Path\To\main.py
 
-On Linux, this is done by:
+On Linux, this is done by running:
 
     /path/to/main.py
 
@@ -81,6 +81,13 @@ file.
 
 
 ### Ubuntu
+
+You can either download and run the install script found
+[here](http://dl.dropbox.com/u/3087188/notorius_ubuntu_install.sh) by
+
+    sh notorius_ubuntu_install.sh
+
+or follow the steps below:
 
 First, you'll need a LaTeX distribution, if you don't already have one.
 
