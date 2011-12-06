@@ -38,12 +38,11 @@ VERSION = '0.1'
 USERNAME = getpass.getuser()
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
-\usepackage[utf8x]{inputenc}
 '''
 
 WELCOME = u'''\\begin{center}
 Hello and welcome to notorius!\\\\
-It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar í \\tau$!
+It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar \\"{i} \\tau$!
 \end{center}'''
 
 PLATFORM = systemplat()
@@ -220,40 +219,40 @@ class Note(object):
         filename_ext = filebase + ext
         filename_png = filebase + 'png'
 
-        # Gotta learn how to use bbox on -T option
         dvipng_cmd = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
                             "--follow", "-o", filename_png, filename_ext]
-        dvipng_cmd_border = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
+        dvipng_cmd_b = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
                             "--follow", "-o", filebase + 'border.png',
                             filename_ext]
         imagemagick_cmd  = ["convert", "-trim", "-density",
                                 "%fx%f" % (1.5*DPI_X, 1.5*DPI_Y),
                                 filename_ext, filename_png]
+        imagemagick_cmd_b  = ["convert", "-bordercolor", "white", "-border",
+                             "10x10",
+                             #"-bordercolor", "grey", "-border", "2x2",
+                             filename_png, filebase + 'border.png']
         if ext == 'dvi':
             try:
                 subprocess.call(dvipng_cmd, stdout=subprocess.PIPE)
-                subprocess.call(dvipng_cmd_border, stdout=subprocess.PIPE)
+                subprocess.call(dvipng_cmd_b, stdout=subprocess.PIPE)
                 return True
             except OSError:
-                print 'You do not have a dvipng distribution!'
-                print 'Falling back on imagemagick'
+                print 'You do not have dvipng installed!'
+                print 'Falling back on ImageMagick'
                 try:
                     subprocess.call(imagemagick_cmd, stdout=subprocess.PIPE)
+                    subprocess.call(imagemagick_cmd_b, stdout=subprocess.PIPE)
                     return True
                 except OSError:
-                    print 'You do not have imagemagick installed!'
+                    print 'You do not have ImageMagick installed!'
                     return False
         elif (ext == 'pdf') or (ext == 'ps'):
             try:
                 subprocess.call(imagemagick_cmd, stdout=subprocess.PIPE)
-                subprocess.call(["convert", "-bordercolor", "white", "-border",
-                                 "10x10",
-                                 #"-bordercolor", "grey", "-border", "2x2",
-                                 filename_png, filebase + 'border.png'],
-                                 stdout=subprocess.PIPE)
+                subprocess.call(imagemagick_cmd_b, stdout=subprocess.PIPE)
                 return True
             except OSError:
-                print 'You do not have imagemagick installed!'
+                print 'You do not have ImageMagick installed!'
                 return False
 
 
