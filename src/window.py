@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1'
+VERSION = '0.1.%s' %'111206-1410'
 
 USERNAME = getpass.getuser()
 
