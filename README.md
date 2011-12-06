@@ -69,7 +69,7 @@ file.
 
 [`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
 
-Now run it!
+Now run it! Don't worry about dvipng, it comes with LaTeX.
 
     C:\Python27\pythonw.exe C:\Path\To\main.py
 
