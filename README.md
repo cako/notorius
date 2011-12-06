@@ -79,7 +79,7 @@ Now run it! Don't worry about dvipng, it comes with LaTeX.
 #### Automated
 
 For an automated installation, download and run the install script found
-[in the downloads](http://dl.dropbox.com/u/3087188/notorius_ubuntu_install.sh).
+[in the downloads](https://github.com/downloads/cako/notorius/install_notorius_ubuntu.sh).
 For the clueless,
 
     chmod +x notorius_ubuntu_install.sh
@@ -127,6 +127,12 @@ After the installation, the `-dev` libraries and `g++` can be uninstalled:
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
     sudo apt-get autoremove
 
+
+Uninstallation
+--------------
+
+Currently, only the Ubuntu script supports automated installation. Download it
+from [the downloads](https://github.com/downloads/cako/notorius/uninstall_notorius_ubuntu.sh) and run it.
 
 License
 ------- 
