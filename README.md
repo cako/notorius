@@ -29,9 +29,11 @@ archives or XML files.
 
 Requirements
 ------------
+The requirements are below. For platform specific instructions see Installation.
+
 * [Python](http://www.python.org/download/) (versions 2.6 or 2.7)
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
-* [python-popper-qt4](http://code.google.com/p/python-poppler-qt4/)
+* [python-poppler-qt4](http://code.google.com/p/python-poppler-qt4/)
 * [LaTeX](http://www.latex-project.org/)
 
 One of the following:
@@ -44,18 +46,6 @@ for example), but currently unavailable for Windows.)
 
 Installation
 ------------
-Once you've got the python libraries, simply run main.py.
-
-On Windows, this is done by:
-
-    C:\Python27\pythonw.exe C:\Path\To\main.py
-
-On Linux, this is done by running:
-
-    /path/to/main.py
-
-Following are the installation instructions for the libraries.
-
 ### Windows
 
 This has been tested with 32-bit Windows XP, but it should work on newer
@@ -79,15 +69,20 @@ file.
 
 [`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
 
+Now run it!
+
+    C:\Python27\pythonw.exe C:\Path\To\main.py
+
 
 ### Ubuntu
 
 You can either download and run the install script found
 [here](http://dl.dropbox.com/u/3087188/notorius_ubuntu_install.sh) by
 
-    sh notorius_ubuntu_install.sh
+    ./notorius_ubuntu_install.sh
 
-or follow the steps below:
+or follow the steps below. If you used the install script, the Notorius will be
+in the menu under Applications>Office.
 
 First, you'll need a LaTeX distribution, if you don't already have one.
 
