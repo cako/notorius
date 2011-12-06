@@ -38,11 +38,12 @@ VERSION = '0.1'
 USERNAME = getpass.getuser()
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
 '''
 
 WELCOME = u'''\\begin{center}
 Hello and welcome to notorius!\\\\
-It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar \\"{i} \\tau$!
+It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar í \\tau$!
 \end{center}'''
 
 PLATFORM = systemplat()
