@@ -1,6 +1,8 @@
 Features
     Program
         * Scroll to next page.
+    Install
+        * Ask to install Okular.
 
 Bugs
     * Fix timestamps for notes.
