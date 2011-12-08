@@ -334,6 +334,9 @@ class ImageLabel(QtGui.QLabel):
         self.drag = False
         self.control = False
         self.noteImage = QtGui.QImage(os.path.join(DIR, 'img/note22.png'))
+        self.rubber_band = QtGui.QRubberBand( QtGui.QRubberBand.Rectangle, self)
+        self.drag_position = QtCore.QPoint()
+
         self.setMouseTracking(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
 
@@ -370,17 +373,14 @@ class ImageLabel(QtGui.QLabel):
         """
         Event handling mouse movement.
         """
+        if self.parent.Document is None:
+            return
         try:
             note = self.notes[self.closest_id]
             has_note = True
         except KeyError:
             has_note = False
-        try:
-            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-        except AttributeError:
-            # No PDF has been loaded yet.
-            width = 0
-            self.drag = False
+        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         if has_note:
             x_offset = (self.rect().width() - width)/2.0
             if self.drag:
@@ -397,17 +397,22 @@ class ImageLabel(QtGui.QLabel):
                                                 'Note %d: <br /> <img src="%s">'
                                                 % (note.uid, img_path),
                                                 self)
+        self.rubber_band.setGeometry(QtCore.QRect(
+                                    self.drag_position, QtCore.QPoint(event.pos())))
 
     def mousePressEvent(self, event):
+        if self.parent.Document is None:
+            return
         if event.button() == 1: # Left click
-            try:
-                width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-            except AttributeError:
-                # No PDF has been loaded yet.
-                width = 0
-
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
             x_offset = (self.rect().width() - width)/2.0
             if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                self.drag_position = QtCore.QPoint(event.pos())
+                self.rubber_band = QtGui.QRubberBand(
+                                                QtGui.QRubberBand.Rectangle, self)
+                self.rubber_band.setGeometry(QtCore.QRect(
+                                                self.drag_position, QtCore.QSize()))
+                self.rubber_band.show()
                 if self.find_closest(event.x(), event.y()):
                     self.drag = True
                 else:
@@ -418,28 +423,41 @@ class ImageLabel(QtGui.QLabel):
             self.drag = False
 
     def mouseReleaseEvent(self, event):
+        if self.parent.Document is None:
+            return
         self.drag = False
+        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+        x_offset = (self.rect().width() - width)/2.0
         if self.move:
-            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-            x_offset = (self.rect().width() - width)/2.0
             note = self.notes[self.closest_id]
             note.pos = self.px2pt(event.x() - x_offset, event.y())
             self.parent.update_image()
             self.move = False
+        if not self.rubber_band.size().isEmpty():
+            x_px = self.rubber_band.x() - x_offset
+            y_px = self.rubber_band.y()
+            width_px =  self.rubber_band.width()
+            height_px =  self.rubber_band.height()
+            pos = self.px2pt(x_px, y_px)
+            x_pt = pos.x()
+            y_pt = pos.y()
+            size = self.px2pt(width_px, height_px)
+            width_pt = size.x()
+            height_pt = size.y()
+            rect = QtCore.QRectF(x_pt, y_pt, width_pt, height_pt)
+            print rect
+        self.rubber_band.hide()
+
 
     def mouseDoubleClickEvent(self, event):
+        if self.parent.Document is None:
+            return
         try:
             note = self.notes[self.closest_id]
             has_note = True
         except KeyError:
             has_note = False
-        try:
-            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-        except AttributeError:
-            # No PDF has been loaded yet.
-            width = 0
-            self.drag = False
-
+        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if has_note and not self.drag:
             if (event.x() >= x_offset) and (event.x() <= width + x_offset):
@@ -450,12 +468,10 @@ class ImageLabel(QtGui.QLabel):
         """
         Event handling right-click contextMenu
         """
+        if self.parent.Document is None:
+            return
         #print self.notes.values()
-        try:
-            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-        except AttributeError:
-            # No PDF has been loaded yet.
-            width = 0
+        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if (pos.x() >= x_offset) and (pos.x() <= width + x_offset):
             if self.find_closest(pos.x(), pos.y()):
@@ -586,6 +602,7 @@ class DocumentWidget(QtGui.QWidget):
         self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.ImgPixmap = QtGui.QPixmap()
         self.scale = 1
+        self.searchLocation = QtCore.QRectF()
 
     def set_scale(self, event):
         """ Sets the scale with which the document will be redered. """
@@ -602,6 +619,7 @@ class DocumentWidget(QtGui.QWidget):
         self.Document.setRenderHint(self.Document.TextAntialiasing)
         self.Document.setRenderHint(self.Document.TextHinting)
         self.CurrentPage =  self.Document.page(self.page)
+        self.searchLocation = QtCore.QRectF()
         self.num_pages = self.Document.numPages()
         self.set_scale(1)
 
