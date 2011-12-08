@@ -27,12 +27,13 @@ functional. You can open PDF, and Okular files, or simply import notes contained
 in an XML file on top of an already open PDF. Saving is also done through Okular
 archives or XML files.
 
-
 Requirements
 ------------
+The requirements are below. For platform specific instructions see Installation.
+
 * [Python](http://www.python.org/download/) (versions 2.6 or 2.7)
 * [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
-* [python-popper-qt4](http://code.google.com/p/python-poppler-qt4/)
+* [python-poppler-qt4](http://code.google.com/p/python-poppler-qt4/)
 * [LaTeX](http://www.latex-project.org/)
 
 One of the following:
@@ -45,18 +46,6 @@ for example), but currently unavailable for Windows.)
 
 Installation
 ------------
-Once you've got the python libraries, simply run main.py.
-
-On Windows, this is done by:
-
-    C:\Python27\pythonw.exe C:\Path\To\main.py
-
-On Linux, this is done by:
-
-    /path/to/main.py
-
-Following are the installation instructions for the libraries.
-
 ### Windows
 
 This has been tested with 32-bit Windows XP, but it should work on newer
@@ -80,8 +69,28 @@ file.
 
 [`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
 
+Now run it! Don't worry about dvipng, it comes with LaTeX.
+
+    C:\Python27\pythonw.exe C:\Path\To\main.py
+
 
 ### Ubuntu
+
+#### Automated
+
+For an automated installation, download and run the install script found
+[in the downloads](https://github.com/downloads/cako/notorius/install_notorius_ubuntu.sh).
+For the clueless,
+
+    chmod +x notorius_ubuntu_install.sh
+    ./notorius_ubuntu_install.sh
+
+Notorius will be in the menu under Applications>Office, but it can also be run
+from the command line with
+
+    notorius
+
+#### Manual
 
 First, you'll need a LaTeX distribution, if you don't already have one.
 
@@ -109,11 +118,21 @@ It can also be installed with
 
     sudo pip install python-poppler-qt4
 
+If you want (recommended) install ImageMagick with
+
+    sudo apt-get install imagemagick
+
 After the installation, the `-dev` libraries and `g++` can be uninstalled:
 
     sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
     sudo apt-get autoremove
 
+
+Uninstallation
+--------------
+
+Currently, only the Ubuntu script supports automated installation. Download it
+from [the downloads](https://github.com/downloads/cako/notorius/uninstall_notorius_ubuntu.sh) and run it.
 
 License
 ------- 

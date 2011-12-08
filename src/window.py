@@ -33,10 +33,12 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
+VERSION = '0.1.%s' %'111206-1410'
+
 USERNAME = getpass.getuser()
 
 PREAMBLE = '''\documentclass[12pt,a4paper]{article}
-\usepackage[utf8x]{inputenc}
+\usepackage[utf8]{inputenc}
 '''
 
 WELCOME = u'''\\begin{center}
@@ -218,40 +220,40 @@ class Note(object):
         filename_ext = filebase + ext
         filename_png = filebase + 'png'
 
-        # Gotta learn how to use bbox on -T option
         dvipng_cmd = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
                             "--follow", "-o", filename_png, filename_ext]
-        dvipng_cmd_border = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
+        dvipng_cmd_b = ["dvipng", "-x", "1500", "-Q", "17", "-T", "tight",
                             "--follow", "-o", filebase + 'border.png',
                             filename_ext]
         imagemagick_cmd  = ["convert", "-trim", "-density",
                                 "%fx%f" % (1.5*DPI_X, 1.5*DPI_Y),
                                 filename_ext, filename_png]
+        imagemagick_cmd_b  = ["convert", "-bordercolor", "white", "-border",
+                             "10x10",
+                             #"-bordercolor", "grey", "-border", "2x2",
+                             filename_png, filebase + 'border.png']
         if ext == 'dvi':
             try:
                 subprocess.call(dvipng_cmd, stdout=subprocess.PIPE)
-                subprocess.call(dvipng_cmd_border, stdout=subprocess.PIPE)
+                subprocess.call(dvipng_cmd_b, stdout=subprocess.PIPE)
                 return True
             except OSError:
-                print 'You do not have a dvipng distribution!'
-                print 'Falling back on imagemagick'
+                print 'You do not have dvipng installed!'
+                print 'Falling back on ImageMagick'
                 try:
                     subprocess.call(imagemagick_cmd, stdout=subprocess.PIPE)
+                    subprocess.call(imagemagick_cmd_b, stdout=subprocess.PIPE)
                     return True
                 except OSError:
-                    print 'You do not have imagemagick installed!'
+                    print 'You do not have ImageMagick installed!'
                     return False
         elif (ext == 'pdf') or (ext == 'ps'):
             try:
                 subprocess.call(imagemagick_cmd, stdout=subprocess.PIPE)
-                subprocess.call(["convert", "-bordercolor", "white", "-border",
-                                 "10x10",
-                                 #"-bordercolor", "grey", "-border", "2x2",
-                                 filename_png, filebase + 'border.png'],
-                                 stdout=subprocess.PIPE)
+                subprocess.call(imagemagick_cmd_b, stdout=subprocess.PIPE)
                 return True
             except OSError:
-                print 'You do not have imagemagick installed!'
+                print 'You do not have ImageMagick installed!'
                 return False
 
 
@@ -811,13 +813,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_about(self):
         about_msg = '''
-        <p><center><font size="4"><b>Notorius</b></font></center></p>
+        <p><center><font size="4"><b>Notorius %s</b></font></center></p>
         <p><b>Author</b>: Carlos da Costa</p>
         <p><b>Code at</b>: <a href="https://github.com/cako/notorius">
                                     https://github.com/cako/notorius<a/></p>
         <p><b>License</b>: <a href="http://www.gnu.org/licenses/gpl-3.0.txt">
                                     GNU General Public License version 3</a></p>
-                    '''
+                    ''' % VERSION
         QtGui.QMessageBox.about(self, "About me", about_msg)
 
     def slot_gui_open(self):
@@ -1088,8 +1090,7 @@ class MainWindow(QtGui.QMainWindow):
                                                         % self.current_note.uid)
         self.annotationDockWidget.setWindowTitle('Note %d'
                                                         % self.current_note.uid)
-        self.old_text = ''
-        self.slot_compile_annotation()
+        self.slot_force_compile()
         #for note in self.documentWidget.ImgLabel.notes.values():
             #print note.text
 
@@ -1158,7 +1159,7 @@ class MainWindow(QtGui.QMainWindow):
     def slot_force_compile(self):
         """ Slot to force compilation through the compileButton. """
         self.old_text = ''
-        self.slot_force_compile()
+        self.slot_compile_annotation()
 
     def slot_compile_annotation(self):
         """

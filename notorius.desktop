@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Terminal=false
+Type=Application
+Categories=Office;
+Name=Notorius
+Comment=Create and edit LaTeX annotations to PDF files
+Exec=/usr/bin/notorius
+Icon=/usr/share/icons/notorius.png
