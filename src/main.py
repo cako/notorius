@@ -26,15 +26,31 @@ import window
 import sys
 from PyQt4 import QtGui
 
-if __name__ == '__main__':
-    APP = QtGui.QApplication(sys.argv)
-    DOCS = sys.argv[1:]
-    if DOCS:
-        for doc in DOCS:
-            WINDOW = window.MainWindow(document=doc)
+class Application(QtGui.QApplication):
+    """ Application Class """
+    def __init__(self, argv):
+        super(QtGui.QApplication, self).__init__(argv)
+        DOCS = sys.argv[1:]
+        self.windows = []
+        if DOCS:
+            for doc in DOCS:
+                WINDOW = window.MainWindow(document=doc)
+                WINDOW.documentWidget.ImgLabel.set_clipboard_trigger(
+                                                    self.slot_set_clipboard)
+                WINDOW.show()
+                self.window += [WINDOW]
+        else:
+            WINDOW = window.MainWindow()
+            WINDOW.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+                                                self.slot_set_clipboard)
             WINDOW.show()
-    else:
-        WINDOW = window.MainWindow()
-        WINDOW.show()
+            self.window = [WINDOW]
 
+    def slot_set_clipboard(self, text):
+        print 'Reached APP with text %s' % unicode(text)
+        clip = self.clipboard()
+        clip.setText(text)
+
+if __name__ == '__main__':
+    APP = Application(sys.argv)
     sys.exit(APP.exec_())

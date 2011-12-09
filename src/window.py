@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111208-2236'
+VERSION = '0.1.%s' %'111209-0113'
 
 USERNAME = getpass.getuser()
 
@@ -322,6 +322,7 @@ class ImageLabel(QtGui.QLabel):
 
     remove_trigger = QtCore.pyqtSignal()
     toggle_source_trigger = QtCore.pyqtSignal()
+    set_clipboard_trigger = QtCore.pyqtSignal(QtCore.QString)
 
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
@@ -400,8 +401,16 @@ class ImageLabel(QtGui.QLabel):
                                                 % (note.uid, img_path),
                                                 self)
         print event.pos()
-        self.rubber_band.setGeometry(QtCore.QRect(
-                                    self.drag_position, QtCore.QPoint(event.pos())))
+        x1 = self.drag_position.x()
+        y1 = self.drag_position.y()
+        x2 = event.x()
+        y2 = event.y()
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if y1 > y2:
+            y1, y2 = y2, y1
+        self.rubber_band.setGeometry(QtCore.QRect(QtCore.QPoint(x1, y1),
+                                                  QtCore.QPoint(x2, y2)))
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
@@ -448,7 +457,10 @@ class ImageLabel(QtGui.QLabel):
             width_pt = size.x()
             height_pt = size.y()
             rect = QtCore.QRectF(x_pt, y_pt, width_pt, height_pt)
-            print rect
+            #print rect
+            text = self.parent.CurrentPage.text(rect)
+            if text:
+                self.set_clipboard_trigger.emit(text)
         self.rubber_band.hide()
 
 
@@ -796,6 +808,10 @@ class MainWindow(QtGui.QMainWindow):
                      self.preambleEditorWindow.slot_open)
         self.setAcceptDrops = True
 
+        # Status bar
+        self.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+                                                    self.slot_set_clipboard)
+
         if document is not None:
             self.load_file(document)
 
@@ -812,6 +828,8 @@ class MainWindow(QtGui.QMainWindow):
         self.current_note.preamble = preamble
         self.slot_compile_annotation()
 
+    def slot_set_clipboard(self, text):
+        self.statusBar().showMessage('Copied "%s" to clipboard.' %unicode(text))
     def slot_about(self):
         about_msg = '''
         <p><center><font size="4"><b>Notorius %s</b></font></center></p>
