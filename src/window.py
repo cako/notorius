@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111206-1410'
+VERSION = '0.1.%s' %'111208-2225'
 
 USERNAME = getpass.getuser()
 
@@ -383,8 +383,8 @@ class ImageLabel(QtGui.QLabel):
         except KeyError:
             has_note = False
         width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+        x_offset = (self.rect().width() - width)/2.0
         if has_note:
-            x_offset = (self.rect().width() - width)/2.0
             if self.drag:
                 #print 'Drag note %d' %note.uid
                 x_offset = (self.rect().width() - width)/2.0
@@ -399,8 +399,9 @@ class ImageLabel(QtGui.QLabel):
                                                 'Note %d: <br /> <img src="%s">'
                                                 % (note.uid, img_path),
                                                 self)
+        print event.pos()
         self.rubber_band.setGeometry(QtCore.QRect(
-                                    self.drag_position, QtCore.QPoint(event.pos())))
+                                    self.drag_position, QPoint(event.pos())))
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
