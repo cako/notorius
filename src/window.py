@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111208-2225'
+VERSION = '0.1.%s' %'111208-2236'
 
 USERNAME = getpass.getuser()
 
@@ -401,7 +401,7 @@ class ImageLabel(QtGui.QLabel):
                                                 self)
         print event.pos()
         self.rubber_band.setGeometry(QtCore.QRect(
-                                    self.drag_position, QPoint(event.pos())))
+                                    self.drag_position, QtCore.QPoint(event.pos())))
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
