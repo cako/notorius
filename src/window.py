@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111209-0113'
+VERSION = '0.1.%s' %'111209-2217'
 
 USERNAME = getpass.getuser()
 
@@ -341,6 +341,7 @@ class ImageLabel(QtGui.QLabel):
         self.drag_position = QtCore.QPoint()
 
         self.setMouseTracking(True)
+        self.setAcceptDrops(True)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -372,6 +373,23 @@ class ImageLabel(QtGui.QLabel):
         self.change_menu.addAction(self.removeNoteAction)
         #self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+            files = []
+            for url in event.mimeData().urls():
+                files.append(str(url.toLocalFile()))
+            self.emit(QtCore.SIGNAL("dropped"), files)
+        else:
+            event.ignore()
+
     def mouseMoveEvent(self,  event):
         """
         Event handling mouse movement.
@@ -400,17 +418,21 @@ class ImageLabel(QtGui.QLabel):
                                                 'Note %d: <br /> <img src="%s">'
                                                 % (note.uid, img_path),
                                                 self)
-        print event.pos()
-        x1 = self.drag_position.x()
-        y1 = self.drag_position.y()
-        x2 = event.x()
-        y2 = event.y()
-        if x1 > x2:
-            x1, x2 = x2, x1
-        if y1 > y2:
-            y1, y2 = y2, y1
-        self.rubber_band.setGeometry(QtCore.QRect(QtCore.QPoint(x1, y1),
-                                                  QtCore.QPoint(x2, y2)))
+        try:
+            x1 = self.drag_position.x()
+            y1 = self.drag_position.y()
+            x2 = event.x()
+            y2 = event.y()
+            if x1 > x2:
+                x1, x2 = x2, x1
+            if y1 > y2:
+                y1, y2 = y2, y1
+            #print QtCore.QRect(QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2))
+            self.rubber_band.setGeometry(QtCore.QRect(QtCore.QPoint(x1, y1),
+                                                      QtCore.QPoint(x2, y2)))
+        except IOError:
+            print 'IOError in rubberBand.setGeometry try.'
+            pass
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
@@ -688,6 +710,9 @@ class DocumentWidget(QtGui.QWidget):
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
+
+    add_windows_trigger = QtCore.pyqtSignal(list)
+
     def __init__(self, parent=None, document = None):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
@@ -739,11 +764,17 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
                      self.slot_about)
 
+        # Document controls icons
+        self.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
+        self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
+
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
         self.documentWidget.setObjectName("documentWidget")
         self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.scrollArea.setWidget(self.documentWidget.ImgLabel)
+        self.connect(self.documentWidget.ImgLabel, QtCore.SIGNAL("dropped"),
+                                                                self.slot_load_dropped)
 
         # Connections for PDF viewer
         self.connect(self.previousPageButton, QtCore.SIGNAL("clicked()"),
@@ -810,14 +841,10 @@ class MainWindow(QtGui.QMainWindow):
 
         # Status bar
         self.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                    self.slot_set_clipboard)
+                                                    self.slot_set_status)
 
         if document is not None:
             self.load_file(document)
-
-    def dropEvent(self, event):
-        print 'This'
-        print event.mimeData()
 
     @property
     def preamble(self):
@@ -828,8 +855,21 @@ class MainWindow(QtGui.QMainWindow):
         self.current_note.preamble = preamble
         self.slot_compile_annotation()
 
-    def slot_set_clipboard(self, text):
-        self.statusBar().showMessage('Copied "%s" to clipboard.' %unicode(text))
+    def slot_load_dropped(self, files):
+        if self.docpath == '' or files[0].endswith('.xml'):
+            self.load_file(files.pop(0))
+        windows = []
+        for doc in files:
+            win = MainWindow(document=doc)
+            windows += [win]
+            win.show()
+        self.add_windows_trigger.emit(windows)
+        #print files
+
+    def slot_set_status(self, text):
+        """ Slot to set statusBar with message. """
+        self.statusBar().showMessage('Copied "%s" to clipboard.' % 
+                                     unicode(text).strip())
     def slot_about(self):
         about_msg = '''
         <p><center><font size="4"><b>Notorius %s</b></font></center></p>
@@ -862,7 +902,8 @@ class MainWindow(QtGui.QMainWindow):
                 annotlist = page.find('annotationList')
                 not_note = False
                 for annot in annotlist.findall('annotation'):
-                    if annot.attrib['type'] == "1":
+                    if ( annot.attrib['type'] == "1" and
+                                        pg <= self.documentWidget.num_pages ):
                         base = annot.find('base')
                         try:
                             author = base.attrib['author']
@@ -935,12 +976,13 @@ class MainWindow(QtGui.QMainWindow):
                 notes = parse_metadata(root)
                 for aux in ['content.xml', 'metadata.xml']:
                     os.remove(os.path.join(TMPDIR, aux))
-                if self.okular_notes:
-                    QtGui.QMessageBox.warning(self, "Warning",
-                            'Not loading annotations that are not text notes.')
                 self.documentWidget.ImgLabel.notes = notes
                 self.documentWidget.update_image()
                 self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
+                if self.okular_notes:
+                    warning = 'Not loading annotations that are '
+                    warning += 'not text notes or are out of range.'
+                    QtGui.QMessageBox.warning(self, "Warning", warning)
             elif filename.endswith('.xml'):
                 if self.docpath == '':
                     QtGui.QMessageBox.warning(self, "Warning",
@@ -955,6 +997,10 @@ class MainWindow(QtGui.QMainWindow):
                     self.setWindowTitle(
                         'Notorius - %s + %s' % (os.path.basename(self.docpath),
                                                 os.path.basename(filename)))
+                    if self.okular_notes:
+                        warning = 'Not loading annotations that are '
+                        warning += 'not text notes or are out of range.'
+                        QtGui.QMessageBox.warning(self, "Warning", warning)
             else:
                 if not filename.endswith('.pdf'):
                     print "Treating file as pdf!"
@@ -969,7 +1015,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
                 self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
                 self.scaleComboBox.setCurrentIndex(0)
-                self.maxPageLabel.setText("/ %s" %self.documentWidget.num_pages)
+                self.maxPageLabel.setText("of %s" %self.documentWidget.num_pages)
                 self.actionExport.setEnabled(True)
                 self.statusBar().showMessage('Opened file %s.' % filename)
         else:

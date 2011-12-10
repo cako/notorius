@@ -30,26 +30,34 @@ class Application(QtGui.QApplication):
     """ Application Class """
     def __init__(self, argv):
         super(QtGui.QApplication, self).__init__(argv)
-        DOCS = sys.argv[1:]
+        docs = sys.argv[1:]
         self.windows = []
-        if DOCS:
-            for doc in DOCS:
-                WINDOW = window.MainWindow(document=doc)
-                WINDOW.documentWidget.ImgLabel.set_clipboard_trigger(
+        if docs:
+            for doc in docs:
+                win = window.MainWindow(document=doc)
+                win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                     self.slot_set_clipboard)
-                WINDOW.show()
-                self.window += [WINDOW]
+                win.add_windows_trigger.connect(self.slot_add_windows)
+                win.show()
+                self.windows += [win]
         else:
-            WINDOW = window.MainWindow()
-            WINDOW.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+            win = window.MainWindow()
+            win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                 self.slot_set_clipboard)
-            WINDOW.show()
-            self.window = [WINDOW]
+            win.add_windows_trigger.connect(self.slot_add_windows)
+            win.show()
+            self.windows = [win]
 
     def slot_set_clipboard(self, text):
-        print 'Reached APP with text %s' % unicode(text)
+        """ Slot to set th clipboard to selection. """
         clip = self.clipboard()
-        clip.setText(text)
+        clip.setText(unicode(text).strip())
+
+    def slot_add_windows(self, windows):
+        for win in windows:
+            win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+                                                self.slot_set_clipboard)
+            self.windows.append(win)
 
 if __name__ == '__main__':
     APP = Application(sys.argv)
