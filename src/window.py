@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111210-1502'
+VERSION = '0.1.%s' %'111210-1513'
 
 USERNAME = getpass.getuser()
 
@@ -671,11 +671,11 @@ class DocumentWidget(QtGui.QWidget):
             page_size =  self.CurrentPage.pageSizeF()
             if event == 1:
                 # 18 is window border, 4 is shadow
-                width = self.parent.rect().width() - 18 - 4
+                width = self.parent.rect().width() - 18 - 6
                 self.scale = 72.0*width/(DPI_X * page_size.width())
             else:
                 # 2 is window border, 4 is shadow
-                height = self.parent.rect().height() - 2 - 4
+                height = self.parent.rect().height() - 2 - 6
                 self.scale = 72.0*height/(DPI_Y * page_size.height())
             self.update_image()
 
@@ -686,8 +686,8 @@ class DocumentWidget(QtGui.QWidget):
                                                         DPI_Y*self.scale)
             self.ImgLabel.setPixmap(self.ImgPixmap.fromImage(self.Image))
 
-            background = QtGui.QImage(QtCore.QSize(self.Image.width() + 4,
-                                                   self.Image.height() + 4),
+            background = QtGui.QImage(QtCore.QSize(self.Image.width() + 6,
+                                                   self.Image.height() + 6),
                                       self.Image.format())
             painter = QtGui.QPainter()
             painter.begin(background)
@@ -695,9 +695,9 @@ class DocumentWidget(QtGui.QWidget):
                                                 background.height()),
                              QtGui.QColor(60, 60, 60))
             painter.drawImage(1, 1, self.Image)
-            painter.fillRect(QtCore.QRect(0, self.Image.height() + 2, 3, 2),
+            painter.fillRect(QtCore.QRect(0, self.Image.height() + 2, 6, 4),
                              QtGui.QColor(203, 201, 200))
-            painter.fillRect(QtCore.QRect(self.Image.width() + 2, 0, 2, 3),
+            painter.fillRect(QtCore.QRect(self.Image.width() + 2, 0, 4, 6),
                              QtGui.QColor(203, 201, 200))
             painter.end()
 
