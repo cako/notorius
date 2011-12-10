@@ -82,8 +82,8 @@ For an automated installation, download and run the install script found
 [in the downloads](https://github.com/downloads/cako/notorius/install_notorius_ubuntu.sh).
 For the clueless,
 
-    chmod +x notorius_ubuntu_install.sh
-    ./notorius_ubuntu_install.sh
+    chmod +x install_notorius_ubuntu.sh
+    ./install_notorius_ubuntu.sh
 
 Notorius will be in the menu under Applications>Office, but it can also be run
 from the command line with
