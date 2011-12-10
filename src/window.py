@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111209-2217'
+VERSION = '0.1.%s' %'111210-0319'
 
 USERNAME = getpass.getuser()
 
@@ -554,14 +554,7 @@ class ImageLabel(QtGui.QLabel):
         self.notes[uid] = Note('New note', self.preamble, COMPILER,
                                    self.parent.page, self.note_pos,
                                    uid)
-
-        painter = QtGui.QPainter()
-        painter.begin(self.parent.Image)
-        painter.drawImage(self.note_icon_pos, self.noteImage)
-        painter.end()
-
-        self.parent.ImgLabel.setPixmap(
-                            QtGui.QPixmap.fromImage(self.parent.Image))
+        self.parent.update_image()
 
     def slot_edit_note(self):
         """
@@ -691,6 +684,19 @@ class DocumentWidget(QtGui.QWidget):
                                                         DPI_Y*self.scale)
             self.ImgLabel.setPixmap(self.ImgPixmap.fromImage(self.Image))
 
+            background = QtGui.QImage(QtCore.QSize(self.Image.width() + 4,
+                                                   self.Image.height() + 4),
+                                      self.Image.format())
+            painter = QtGui.QPainter()
+            painter.begin(background)
+            painter.fillRect(QtCore.QRect(0, 0, background.width(),
+                                                background.height()),
+                             QtGui.QColor(60, 60, 60))
+            painter.drawImage(1, 1, self.Image)
+            painter.fillRect(QtCore.QRect(0, self.Image.height() + 2, 3, 2),
+                             QtGui.QColor(203, 201, 200))
+            painter.end()
+
             for note in self.ImgLabel.notes.values():
                 if note.page == self.page:
                     #print note.uid
@@ -702,16 +708,27 @@ class DocumentWidget(QtGui.QWidget):
 
                     #print x,y
                     painter = QtGui.QPainter()
-                    painter.begin(self.Image)
+                    painter.begin(background)
                     painter.drawImage(x, y, self.ImgLabel.noteImage)
                     painter.end()
 
-            self.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(self.Image))
+            self.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(background))
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
 
     add_windows_trigger = QtCore.pyqtSignal(list)
+
+    def highlight_buttons(self, event):
+        if self.previousPageButton.underMouse():
+            self.previousPageButton.setFlat(False)
+        else:
+            self.previousPageButton.setFlat(True)
+
+        if self.nextPageButton.underMouse():
+            self.nextPageButton.setFlat(False)
+        else:
+            self.nextPageButton.setFlat(True)
 
     def __init__(self, parent=None, document = None):
         """ Initialize MainWindow """
@@ -764,9 +781,10 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
                      self.slot_about)
 
-        # Document controls icons
+        # Document controls
         self.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
         self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
+        self.controlsWidget.mouseMoveEvent = self.highlight_buttons
 
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)

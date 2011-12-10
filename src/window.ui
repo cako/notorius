@@ -35,6 +35,9 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="0">
         <widget class="QPushButton" name="previousPageButton">
@@ -53,6 +56,9 @@
            <height>28</height>
           </size>
          </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -63,7 +69,7 @@
           </size>
          </property>
          <property name="flat">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -106,6 +112,9 @@
            <height>28</height>
           </size>
          </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -114,6 +123,9 @@
            <width>22</width>
            <height>22</height>
           </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
