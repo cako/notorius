@@ -3,6 +3,8 @@ Features
         * Scroll to next page.
         * Create a 'bring to front'
         * Quit without saving?
+    Install
+        * Ask to install Okular.
 
 Bugs
     * Fix timestamps for notes.
