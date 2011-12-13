@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111210-1513'
+VERSION = '0.1.%s' %'111213-1413'
 
 USERNAME = getpass.getuser()
 
@@ -167,7 +167,7 @@ class Note(object):
             filename = os.path.join(TMPDIR,
                                     str(randint(0, 999999)) + ".note.tex")
             try:
-                filehandle = open(filename, 'w')
+                open(filename, 'w')
                 exists = False
             except IOError:
                 exists = True
@@ -401,12 +401,11 @@ class ImageLabel(QtGui.QLabel):
             has_note = True
         except KeyError:
             has_note = False
-        width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
-        x_offset = (self.rect().width() - width)/2.0
         if has_note:
+            width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
+            x_offset = (self.rect().width() - width)/2.0
             if self.drag:
                 #print 'Drag note %d' %note.uid
-                x_offset = (self.rect().width() - width)/2.0
                 note.pos = self.px2pt(event.x() - x_offset, event.y())
                 self.parent.update_image()
             else:
@@ -490,7 +489,7 @@ class ImageLabel(QtGui.QLabel):
         if self.parent.Document is None:
             return
         try:
-            note = self.notes[self.closest_id]
+            self.notes[self.closest_id]
             has_note = True
         except KeyError:
             has_note = False
@@ -922,7 +921,6 @@ class MainWindow(QtGui.QMainWindow):
             for page in root.find('pageList').findall('page'):
                 pg = int(page.attrib['number'])
                 annotlist = page.find('annotationList')
-                not_note = False
                 for annot in annotlist.findall('annotation'):
                     if ( annot.attrib['type'] == "1" and
                                         pg <= self.documentWidget.num_pages ):
@@ -953,7 +951,7 @@ class MainWindow(QtGui.QMainWindow):
                             uid = int(uname.rsplit('-')[-1])
                         except KeyError:
                             try:
-                                uid = max(a.keys())
+                                uid = max(notes.keys())
                             except ValueError:
                                 uid = 0
 
@@ -978,7 +976,7 @@ class MainWindow(QtGui.QMainWindow):
             self.pageSpinBox.setEnabled(True)
             self.scaleSpinBox.setEnabled(True)
             self.scaleComboBox.setEnabled(True)
-            file_dir = os.path.dirname(filename)
+            #file_dir = os.path.dirname(filename)
             self.okular_notes = []
             if filename.endswith('.zip') or filename.endswith('.okular'):
                 self.rmdoc = True
