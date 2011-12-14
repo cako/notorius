@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111213-1413'
+VERSION = '0.1.%s' %'111213-2308'
 
 USERNAME = getpass.getuser()
 
@@ -94,13 +94,14 @@ os.mkdir(TMPDIR)
 
 class PreambleWindow(QtGui.QMainWindow):
     """
-    PackageDialog allows for editing of packages
+    PreambleWindow allows for editing of the preamble.
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(os.path.join(DIR, 'preamble_editor_window.ui'), self)
         self.parent = parent
         self.preamble = unicode(preamble)
+        self.setStatusBar(None)
 
         self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
                      self.slot_cancel)
@@ -110,7 +111,7 @@ class PreambleWindow(QtGui.QMainWindow):
 
     def slot_open(self):
         """
-        Slot for opening the Preamble window. It repopulates the window with the
+        Slot for opening PreambleWindow. It repopulates the window with the
         saved preamble.
         """
         self.preamble = self.parent.preamble
@@ -123,11 +124,76 @@ class PreambleWindow(QtGui.QMainWindow):
 
     def slot_save(self):
         """
-        Slot for sve button. It stores the value in the preamble QTextEdit
+        Slot for save button. It stores the value in the preamble QTextEdit
         window.
         """
         self.preamble = unicode(self.preambleTextEdit.toPlainText())
         self.parent.preamble = self.preamble
+        self.close()
+
+class OffsetWindow(QtGui.QMainWindow):
+    """
+    OffsetWindow is the window in which the user will input the offset.
+    """
+    def __init__(self, parent = None):
+        QtGui.QMainWindow.__init__(self, parent)
+        uic.loadUi(os.path.join(DIR, 'offset_window.ui'), self)
+        self.parent = parent
+        self.offset = 0
+        self.setStatusBar(None)
+        self.okButton.setDefault(True)
+
+        self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_cancel)
+
+        self.connect(self.okButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_ok)
+
+    def slot_open(self, event):
+        """
+        Slot for opening the Preamble window. It repopulates the window with the
+        saved preamble.
+        """
+        # On
+        if event == 2:
+            self.offset = self.parent.offset
+            self.offsetSpinBox.setValue(self.parent.pageSpinBox.value() +
+                                        self.offset)
+            self.show()
+        # Off
+        else:
+            old = self.offset
+            page = self.parent.pageSpinBox.value() - old
+            self.offset = 0
+            self.parent.documentWidget.offset = 0
+            self.parent.maxPageLabel.setText("of %d" %
+                            self.parent.documentWidget.num_pages)
+            self.parent.pageSpinBox.setMaximum(
+                                        self.parent.pageSpinBox.maximum() - old)
+            self.parent.pageSpinBox.setMinimum(
+                                        self.parent.pageSpinBox.minimum() - old)
+            self.parent.pageSpinBox.setValue(page)
+
+    def slot_cancel(self):
+        """ Slot for cancel button. Closes window without saving. """
+        self.close()
+
+    def slot_ok(self):
+        """
+        Slot for ok button. It stores the value in the preamble QTextEdit
+        window.
+        """
+        self.offset = self.offsetSpinBox.value()-self.parent.pageSpinBox.value()
+        #print 'Offset %d.' % self.offset
+        self.parent.documentWidget.offset = self.offset
+        self.parent.maxPageLabel.setText("of %d" %
+                        (self.parent.documentWidget.num_pages + self.offset))
+        self.parent.pageSpinBox.setMaximum(self.parent.pageSpinBox.maximum() +
+                                           self.offset)
+        #print 'Minimum %d' %  self.parent.pageSpinBox.minimum()
+        self.parent.pageSpinBox.setMinimum(self.parent.pageSpinBox.minimum() +
+                                           self.offset)
+        self.parent.pageSpinBox.setValue(self.offsetSpinBox.value())
         self.close()
 
 class Note(object):
@@ -618,6 +684,7 @@ class DocumentWidget(QtGui.QWidget):
     """
     DocumentWidget is the main component of MainWindow. It displays the PDF.
     """
+
     def __init__(self, parent = None):
         """ Initialize DocumentWidget. """
         QtGui.QWidget.__init__(self, parent)
@@ -625,8 +692,9 @@ class DocumentWidget(QtGui.QWidget):
         self.Document = None
         self.CurrentPage = None
         self.Image = None
-        self.num_pages = None
+        self.num_pages = 0
         self.page = 0
+        self.offset = 0
         self.ImgLabel = ImageLabel(self)
         self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.ImgPixmap = QtGui.QPixmap()
@@ -655,7 +723,8 @@ class DocumentWidget(QtGui.QWidget):
     def change_page(self, event):
         """ Changes the page. """
         if self.Document is not None:
-            self.page = (event-1) % self.num_pages
+            self.page = ((event - self.offset -1) % self.num_pages)
+            #print 'Page %d.' % self.page
             self.CurrentPage = self.Document.page(self.page)
             self.update_image()
 
@@ -739,6 +808,7 @@ class MainWindow(QtGui.QMainWindow):
         uic.loadUi(os.path.join(DIR, 'window.ui'), self)
         self.setWindowIcon(QtGui.QIcon(os.path.join(DIR, 'img/note64.png')))
         self._preamble = PREAMBLE
+        self.offset = 0
         self.docpath = ''
         self.rmdoc = False
         self.displayed_uid = -1
@@ -789,6 +859,10 @@ class MainWindow(QtGui.QMainWindow):
         self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
         self.controlsWidget.mouseMoveEvent = self.highlight_buttons
 
+        self.offsetWindow = OffsetWindow(self)
+        self.connect(self.offsetCheckBox, QtCore.SIGNAL("stateChanged(int)"),
+                     self.offsetWindow.slot_open)
+
         # PDF viewer widget
         self.documentWidget = DocumentWidget(self.scrollArea)
         self.documentWidget.setObjectName("documentWidget")
@@ -804,7 +878,7 @@ class MainWindow(QtGui.QMainWindow):
                      self.slot_next_page)
         self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
                      self.documentWidget.change_page)
-        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(QString)"),
+        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(int)"),
                     self.documentWidget.set_scale)
         self.connect(self.scaleComboBox,
                      QtCore.SIGNAL("currentIndexChanged(int)"),
@@ -854,11 +928,10 @@ class MainWindow(QtGui.QMainWindow):
                      self.slot_compile_annotation)
         self.old_text = ''
 
-        # Package editor
+        # Preamble editor
         self.preambleEditorWindow = PreambleWindow(self)
         self.connect(self.actionPreambleEditor, QtCore.SIGNAL("triggered()"),
                      self.preambleEditorWindow.slot_open)
-        self.setAcceptDrops = True
 
         # Status bar
         self.documentWidget.ImgLabel.set_clipboard_trigger.connect(
@@ -974,6 +1047,8 @@ class MainWindow(QtGui.QMainWindow):
             self.nextPageButton.setEnabled(True)
             self.previousPageButton.setEnabled(True)
             self.pageSpinBox.setEnabled(True)
+            self.offsetCheckBox.setEnabled(True)
+            self.offsetCheckBox.setChecked(False)
             self.scaleSpinBox.setEnabled(True)
             self.scaleComboBox.setEnabled(True)
             #file_dir = os.path.dirname(filename)
@@ -1035,7 +1110,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
                 self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
                 self.scaleComboBox.setCurrentIndex(0)
-                self.maxPageLabel.setText("of %s" %self.documentWidget.num_pages)
+                self.maxPageLabel.setText("of %d" %
+                                          self.documentWidget.num_pages)
                 self.actionExport.setEnabled(True)
                 self.statusBar().showMessage('Opened file %s.' % filename)
         else:
