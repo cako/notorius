@@ -1162,7 +1162,7 @@ class MainWindow(QtGui.QMainWindow):
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
         if self.scaleComboBox.currentIndex() == 1:
-            self.documentWidget.fit_to_width_or_height(0)
+            self.documentWidget.fit_to_width_or_height(1)
         elif self.scaleComboBox.currentIndex() == 2:
             self.documentWidget.fit_to_width_or_height(2)
 
