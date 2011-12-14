@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111213-2308'
+VERSION = '0.1.%s' %'111213-2322'
 
 USERNAME = getpass.getuser()
 
@@ -703,7 +703,7 @@ class DocumentWidget(QtGui.QWidget):
 
     def set_scale(self, event):
         """ Sets the scale with which the document will be redered. """
-        self.scale = float(event)
+        self.scale = event
         if self.Document is not None:
             self.update_image()
 
@@ -878,7 +878,7 @@ class MainWindow(QtGui.QMainWindow):
                      self.slot_next_page)
         self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
                      self.documentWidget.change_page)
-        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(int)"),
+        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(double)"),
                     self.documentWidget.set_scale)
         self.connect(self.scaleComboBox,
                      QtCore.SIGNAL("currentIndexChanged(int)"),
