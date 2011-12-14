@@ -262,7 +262,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>804</width>
+         <width>690</width>
          <height>547</height>
         </rect>
        </property>
@@ -386,7 +386,23 @@
    <widget class="QWidget" name="searchDockWidgetContents">
     <layout class="QGridLayout" name="gridLayout_4">
      <item row="0" column="0">
-      <widget class="QWidget" name="searchWidget" native="true"/>
+      <widget class="QWidget" name="searchWidget" native="true">
+       <widget class="QTreeWidget" name="treeWidget">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>90</y>
+          <width>256</width>
+          <height>351</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
+       </widget>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -475,5 +491,22 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>treeWidget</sender>
+   <signal>viewportEntered()</signal>
+   <receiver>actionOpen</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>872</x>
+     <y>325</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

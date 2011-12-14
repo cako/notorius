@@ -665,21 +665,6 @@ class ImageLabel(QtGui.QLabel):
 
         return QtCore.QPointF(width, height)
 
-class AnnotationWidget(QtGui.QWidget):
-    """
-    AnnotationWidget holds the compiled annotation.
-    """
-    def __init__(self, parent = None, ImgPixmap = None):
-        """ Initialize DocumentWidget. """
-        QtGui.QWidget.__init__(self, parent)
-        self.ImgLabel = QtGui.QLabel()
-        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
-        if ImgPixmap is None:
-            self.ImgPixmap = QtGui.QPixmap()
-        else:
-            self.ImgPixmap = ImgPixmap
-        self.ImgLabel.setPixmap(self.ImgPixmap)
-
 class DocumentWidget(QtGui.QWidget):
     """
     DocumentWidget is the main component of MainWindow. It displays the PDF.
@@ -692,6 +677,7 @@ class DocumentWidget(QtGui.QWidget):
         self.Document = None
         self.CurrentPage = None
         self.Image = None
+        self.highlights = None
         self.num_pages = 0
         self.page = 0
         self.offset = 0
@@ -699,7 +685,6 @@ class DocumentWidget(QtGui.QWidget):
         self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.ImgPixmap = QtGui.QPixmap()
         self.scale = 1
-        self.searchLocation = QtCore.QRectF()
 
     def set_scale(self, event):
         """ Sets the scale with which the document will be redered. """
@@ -716,7 +701,6 @@ class DocumentWidget(QtGui.QWidget):
         self.Document.setRenderHint(self.Document.TextAntialiasing)
         self.Document.setRenderHint(self.Document.TextHinting)
         self.CurrentPage =  self.Document.page(self.page)
-        self.searchLocation = QtCore.QRectF()
         self.num_pages = self.Document.numPages()
         self.set_scale(1)
 
@@ -727,6 +711,7 @@ class DocumentWidget(QtGui.QWidget):
             #print 'Page %d.' % self.page
             self.CurrentPage = self.Document.page(self.page)
             self.update_image()
+            self.parent.ensureVisible(0, 0)
 
     def fit_to_width_or_height(self, event):
         """
@@ -767,6 +752,16 @@ class DocumentWidget(QtGui.QWidget):
                              QtGui.QColor(203, 201, 200))
             painter.fillRect(QtCore.QRect(self.Image.width() + 2, 0, 4, 6),
                              QtGui.QColor(203, 201, 200))
+
+            if self.highlights is not None:
+                for rect in self.highlights:
+                    (x, y) = self.ImgLabel.pt2px(
+                                            QtCore.QSizeF(rect.x(), rect.y()))
+                    (w, h) = self.ImgLabel.pt2px(QtCore.QSizeF(rect.width(),
+                                                               rect.height()))
+                    painter.fillRect(QtCore.QRect(x + 1, y + 1, w, h),
+                                     QtGui.QColor(255, 255, 0, 150))
+
             painter.end()
 
             for note in self.ImgLabel.notes.values():
@@ -785,6 +780,151 @@ class DocumentWidget(QtGui.QWidget):
                     painter.end()
 
             self.ImgLabel.setPixmap(QtGui.QPixmap.fromImage(background))
+
+class SearchWidget(QtGui.QWidget):
+    """
+    SearchWidget holds the search results.
+    """
+
+    hide_trigger = QtCore.pyqtSignal()
+    change_page_trigger = QtCore.pyqtSignal(int)
+    #show_trigger = QtCore.pyqtSignal()
+
+    def __init__(self, parent = None):
+        QtGui.QWidget.__init__(self, parent)
+        self.setObjectName("searchWidget")
+        self.documentWidget = None
+
+        self.searchLineEdit = QtGui.QLineEdit(self)
+        self.searchLineEdit.setObjectName("searchLineEdit")
+
+        self.searchTree = QtGui.QTreeWidget(self)
+        self.searchTree.setObjectName("searchTree")
+        self.searchTree.setHeaderLabels(["Search results"])
+        #self.searchTree.header().setResizeMode(0, QtGui.QHeaderView.Stretch)
+
+        #page1 = QtGui.QTreeWidgetItem(['Page 1'])
+        #page1.addChild(QtGui.QTreeWidgetItem(['Result 1']))
+        #page1.addChild(QtGui.QTreeWidgetItem(['Result 2']))
+        #page2 = QtGui.QTreeWidgetItem(['Page 2'])
+        #page2.addChild(QtGui.QTreeWidgetItem(['Result 2']))
+        #self.searchTree.addTopLevelItems([page1, page2])
+
+
+        self.connect(self.searchLineEdit, QtCore.SIGNAL("editingFinished()"),
+                                          self.slot_search)
+        self.connect(self.searchTree,
+                     QtCore.SIGNAL("currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)"),
+                     #QtCore.SIGNAL("itemActivated(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemChanged(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemClicked(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemCollapsed(QTreeWidgetItem*)"),
+                     #QtCore.SIGNAL("itemDoubleClicked(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemEntered(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemExpanded(QTreeWidgetItem*)"),
+                     #QtCore.SIGNAL("itemPressed(QTreeWidgetItem*,int)"),
+                     #QtCore.SIGNAL("itemSelectionChanged()"),
+                     self.slot_changed_index)
+
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout.addWidget(self.searchLineEdit, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.searchTree)
+
+    def keyPressEvent(self, event):
+        if (event.matches(QtGui.QKeySequence.Find) or
+                                        event.key() == QtCore.Qt.Key_Slash):
+            self.searchLineEdit.selectAll()
+            self.searchLineEdit.setFocus()
+            #self.show_trigger.emit()
+        elif event.key() == QtCore.Qt.Key_Escape:
+            self.hide_trigger.emit()
+
+    def slot_changed_index(self, item, previtem=None):
+        #print unicode(item.text(column))
+        try:
+            (rec, pg) = self.search_results[item]
+            self.documentWidget.highlights = [rec]
+            if pg != self.documentWidget.page:
+                self.change_page_trigger.emit(pg + 1 +
+                                              self.documentWidget.offset)
+            self.documentWidget.update_image()
+            (x, y) = self.documentWidget.ImgLabel.pt2px(
+                                                QtCore.QSizeF(rec.x(), rec.y()))
+            self.documentWidget.parent.ensureVisible(x, y)
+            self.documentWidget.highlights = []
+        except KeyError:
+            pass
+        #print self.searchTree.columnCount()
+
+
+    def slot_search(self):
+        if not self.searchLineEdit.hasFocus():
+            return
+        self.searchTree.clear()
+        text = unicode(self.searchLineEdit.text())
+        cur_page = self.documentWidget.page
+        self.search_results = {}
+
+        # self.search results has the following structure:
+        # self.search_results[QTreeWidgetItem] = [[QRectF, page],
+        #                                         [QRectF, page], etc]
+
+        first = True
+        for page in ( range(cur_page, self.documentWidget.num_pages) +
+                      range(0, cur_page) ):
+            first_of_page = True
+            loc = QtCore.QRectF()
+            while self.documentWidget.Document.page(page).search(
+                        text,
+                        loc,
+                        popplerqt4.Poppler.Page.NextResult,
+                        popplerqt4.Poppler.Page.CaseInsensitive):
+
+                if first_of_page:
+                    page_item = QtGui.QTreeWidgetItem(
+                        ['Page %d' % (page + self.documentWidget.offset + 1)])
+                    self.searchTree.addTopLevelItem(page_item)
+                    first_of_page = False
+
+                # Widdened box to grab text 14% of the hole doc to each box
+                wide = self.documentWidget.Document.page(page).pageSizeF()
+                wide = wide.width() * 0.14
+                loc_wide = QtCore.QRectF(loc.x() - wide, loc.y(),
+                                         loc.width() + 2*wide, loc.height())
+                display = self.documentWidget.Document.page(page).text(loc_wide)
+                #display = '%f, %f, %f, %f' % (loc_wide.x(), loc_wide.y(),
+                #loc_wide.width(), loc_wide.height())
+
+                loc_item = QtGui.QTreeWidgetItem([display])
+                #print 'Created ', loc_item
+                page_item.addChild(loc_item)
+                if first:
+                    first_item = loc_item
+                    first = False
+
+                self.search_results[loc_item] = [QtCore.QRectF(
+                                                   loc.x(), loc.y(),
+                                                   loc.width(), loc.height()),
+                                                 page]
+
+        self.searchTree.setCurrentItem(first_item)
+        self.slot_changed_index(first_item, 0)
+
+class AnnotationWidget(QtGui.QWidget):
+    """
+    AnnotationWidget holds the compiled annotation.
+    """
+    def __init__(self, parent = None, ImgPixmap = None):
+        """ Initialize DocumentWidget. """
+        QtGui.QWidget.__init__(self, parent)
+        self.ImgLabel = QtGui.QLabel()
+        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
+        if ImgPixmap is None:
+            self.ImgPixmap = QtGui.QPixmap()
+        else:
+            self.ImgPixmap = ImgPixmap
+        self.ImgLabel.setPixmap(self.ImgPixmap)
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -863,7 +1003,16 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.offsetCheckBox, QtCore.SIGNAL("stateChanged(int)"),
                      self.offsetWindow.slot_open)
 
+        # Search widget
+        self.searchWidget = SearchWidget(self.searchDockWidgetContents)
+        self.gridLayout_4.addWidget(self.searchWidget, 0, 0, 1, 1)
+        self.searchDockWidget.hide()
+        self.searchWidget.hide_trigger.connect(self.searchDockWidget.hide)
+        self.searchWidget.change_page_trigger.connect(self.pageSpinBox.setValue)
+        #self.searchWidget.show_trigger.connect(self.searchDockWidget.show)
+
         # PDF viewer widget
+        self.scrollArea.setMinimumWidth(0)
         self.documentWidget = DocumentWidget(self.scrollArea)
         self.documentWidget.setObjectName("documentWidget")
         self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
@@ -1113,6 +1262,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.maxPageLabel.setText("of %d" %
                                           self.documentWidget.num_pages)
                 self.actionExport.setEnabled(True)
+                self.searchWidget.documentWidget = self.documentWidget
                 self.statusBar().showMessage('Opened file %s.' % filename)
         else:
             print 'No file to load!'
@@ -1301,12 +1451,10 @@ class MainWindow(QtGui.QMainWindow):
     def slot_prev_page(self):
         """ Slot to go to the previous page. """
         self.pageSpinBox.setValue(self.pageSpinBox.value() - 1)
-        self.scrollArea.ensureVisible(0, 0)
 
     def slot_next_page(self):
         """ Slot to go to the next page. """
         self.pageSpinBox.setValue(self.pageSpinBox.value() + 1)
-        self.scrollArea.ensureVisible(0, 0)
 
     def slot_scale(self, event):
         """ Slot to change the scale. """
@@ -1338,10 +1486,20 @@ class MainWindow(QtGui.QMainWindow):
             self.annotationWidget.ImgLabel.setPixmap(
                                             self.current_note.icon)
 
+    def keyPressEvent(self, event):
+        if self.docpath != '':
+            if (event.matches(QtGui.QKeySequence.Find) or
+                                            event.key() == QtCore.Qt.Key_Slash):
+                self.searchDockWidget.show()
+                self.searchWidget.searchLineEdit.selectAll()
+                self.searchWidget.searchLineEdit.setFocus()
+            elif event.key() == QtCore.Qt.Key_Escape:
+                self.searchDockWidget.hide()
+
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
         if self.scaleComboBox.currentIndex() == 1:
-            self.documentWidget.fit_to_width_or_height(0)
+            self.documentWidget.fit_to_width_or_height(1)
         elif self.scaleComboBox.currentIndex() == 2:
             self.documentWidget.fit_to_width_or_height(2)
 
