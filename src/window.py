@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111214-2211'
+VERSION = '0.1.%s' %'111214-2248'
 
 USERNAME = getpass.getuser()
 
@@ -760,7 +760,7 @@ class DocumentWidget(QtGui.QWidget):
                     (w, h) = self.ImgLabel.pt2px(QtCore.QSizeF(rect.width(),
                                                                rect.height()))
                     painter.fillRect(QtCore.QRect(x + 1, y + 1, w, h),
-                                     QtGui.QColor(255, 255, 0, 150))
+                                     QtGui.QColor(255, 255, 0, 100))
 
             painter.end()
 
@@ -995,8 +995,17 @@ class MainWindow(QtGui.QMainWindow):
                      self.slot_about)
 
         # Document controls
-        self.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
-        self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
+        if PLATFORM == 'Windows':
+            self.previousPageButton.setText('Previous')
+            self.nextPageButton.setText('Next')
+            font_metrics = QtGui.QFontMetrics(QtGui.QFont())
+            size_p = font_metrics.size(QtCore.Qt.TextSingleLine, 'Previous')
+            size_n = font_metrics.size(QtCore.Qt.TextSingleLine, 'Next')
+            self.previousPageButton.setMinimumWidth(size_p.width() + 10)
+            self.nextPageButton.setMinimumWidth(size_n.width() + 10)
+        else:
+            self.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
+            self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
         self.controlsWidget.mouseMoveEvent = self.highlight_buttons
 
         self.offsetWindow = OffsetWindow(self)
