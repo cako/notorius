@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111214-2248'
+VERSION = '0.1.%s' %'111219-1531'
 
 USERNAME = getpass.getuser()
 
@@ -476,6 +476,21 @@ class ImageLabel(QtGui.QLabel):
                 self.parent.update_image()
             else:
                 if (event.x() >= x_offset) and (event.x() <= width + x_offset):
+                    try:
+                        x1 = self.drag_position.x()
+                        y1 = self.drag_position.y()
+                        x2 = event.x()
+                        y2 = event.y()
+                        if x1 > x2:
+                            x1, x2 = x2, x1
+                        if y1 > y2:
+                            y1, y2 = y2, y1
+                        #print QtCore.QRect(QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2))
+                        self.rubber_band.setGeometry(QtCore.QRect(QtCore.QPoint(x1, y1),
+                                                                  QtCore.QPoint(x2, y2)))
+                    except IOError:
+                        print 'IOError in rubberBand.setGeometry try.'
+                        pass
                     if self.find_closest(event.x(), event.y()):
                         note.generate_source()
                         img_path =  note.filename.rstrip('tex') + 'border.png'
@@ -483,21 +498,6 @@ class ImageLabel(QtGui.QLabel):
                                                 'Note %d: <br /> <img src="%s">'
                                                 % (note.uid, img_path),
                                                 self)
-        try:
-            x1 = self.drag_position.x()
-            y1 = self.drag_position.y()
-            x2 = event.x()
-            y2 = event.y()
-            if x1 > x2:
-                x1, x2 = x2, x1
-            if y1 > y2:
-                y1, y2 = y2, y1
-            #print QtCore.QRect(QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2))
-            self.rubber_band.setGeometry(QtCore.QRect(QtCore.QPoint(x1, y1),
-                                                      QtCore.QPoint(x2, y2)))
-        except IOError:
-            print 'IOError in rubberBand.setGeometry try.'
-            pass
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
