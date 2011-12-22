@@ -33,7 +33,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111219-1531'
+VERSION = '0.1.%s' %'111222-1855'
 
 USERNAME = getpass.getuser()
 
@@ -389,6 +389,7 @@ class ImageLabel(QtGui.QLabel):
     remove_trigger = QtCore.pyqtSignal()
     toggle_source_trigger = QtCore.pyqtSignal()
     set_clipboard_trigger = QtCore.pyqtSignal(QtCore.QString)
+    change_scale_trigger = QtCore.pyqtSignal(float)
 
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
@@ -408,6 +409,7 @@ class ImageLabel(QtGui.QLabel):
 
         self.setMouseTracking(True)
         self.setAcceptDrops(True)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -455,6 +457,18 @@ class ImageLabel(QtGui.QLabel):
             self.emit(QtCore.SIGNAL("dropped"), files)
         else:
             event.ignore()
+
+    def keyPressEvent(self, event):
+        if ( event.key() == QtCore.Qt.Key_Plus or
+             event.key() == QtCore.Qt.Key_Equal and
+             event.modifiers() == QtCore.Qt.ControlModifier):
+            self.change_scale_trigger.emit(self.parent.scale + 0.25)
+        elif ( event.key() == QtCore.Qt.Key_Minus and
+               event.modifiers() == QtCore.Qt.ControlModifier):
+            self.change_scale_trigger.emit(self.parent.scale - 0.25)
+        elif ( event.key() == QtCore.Qt.Key_0 and
+               event.modifiers() == QtCore.Qt.ControlModifier):
+            self.change_scale_trigger.emit(1.0)
 
     def mouseMoveEvent(self,  event):
         """
@@ -801,15 +815,6 @@ class SearchWidget(QtGui.QWidget):
         self.searchTree = QtGui.QTreeWidget(self)
         self.searchTree.setObjectName("searchTree")
         self.searchTree.setHeaderLabels(["Search results"])
-        #self.searchTree.header().setResizeMode(0, QtGui.QHeaderView.Stretch)
-
-        #page1 = QtGui.QTreeWidgetItem(['Page 1'])
-        #page1.addChild(QtGui.QTreeWidgetItem(['Result 1']))
-        #page1.addChild(QtGui.QTreeWidgetItem(['Result 2']))
-        #page2 = QtGui.QTreeWidgetItem(['Page 2'])
-        #page2.addChild(QtGui.QTreeWidgetItem(['Result 2']))
-        #self.searchTree.addTopLevelItems([page1, page2])
-
 
         self.connect(self.searchLineEdit, QtCore.SIGNAL("editingFinished()"),
                                           self.slot_search)
@@ -840,6 +845,10 @@ class SearchWidget(QtGui.QWidget):
         elif event.key() == QtCore.Qt.Key_Escape:
             self.hide_trigger.emit()
 
+    def hideEvent(self, event):
+        self.documentWidget.highlights = []
+        self.documentWidget.update_image()
+
     def slot_changed_index(self, item, previtem=None):
         #print unicode(item.text(column))
         try:
@@ -852,10 +861,8 @@ class SearchWidget(QtGui.QWidget):
             (x, y) = self.documentWidget.ImgLabel.pt2px(
                                                 QtCore.QSizeF(rec.x(), rec.y()))
             self.documentWidget.parent.ensureVisible(x, y)
-            self.documentWidget.highlights = []
         except KeyError:
             pass
-        #print self.searchTree.columnCount()
 
 
     def slot_search(self):
@@ -871,6 +878,7 @@ class SearchWidget(QtGui.QWidget):
         #                                         [QRectF, page], etc]
 
         first = True
+        first_item = None
         for page in ( range(cur_page, self.documentWidget.num_pages) +
                       range(0, cur_page) ):
             first_of_page = True
@@ -907,9 +915,9 @@ class SearchWidget(QtGui.QWidget):
                                                    loc.x(), loc.y(),
                                                    loc.width(), loc.height()),
                                                  page]
-
-        self.searchTree.setCurrentItem(first_item)
-        self.slot_changed_index(first_item, 0)
+        if first_item is not None:
+            self.searchTree.setCurrentItem(first_item)
+            self.slot_changed_index(first_item, 0)
 
 class AnnotationWidget(QtGui.QWidget):
     """
@@ -1028,6 +1036,7 @@ class MainWindow(QtGui.QMainWindow):
         self.scrollArea.setWidget(self.documentWidget.ImgLabel)
         self.connect(self.documentWidget.ImgLabel, QtCore.SIGNAL("dropped"),
                                                                 self.slot_load_dropped)
+        self.documentWidget.ImgLabel.change_scale_trigger.connect(self.scaleSpinBox.setValue)
 
         # Connections for PDF viewer
         self.connect(self.previousPageButton, QtCore.SIGNAL("clicked()"),
