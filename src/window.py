@@ -23,6 +23,7 @@
 
 """ Window. """
 
+import datetime
 import getpass
 import os
 import popplerqt4
@@ -33,7 +34,7 @@ from PyQt4 import QtCore, QtGui, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'111222-1855'
+VERSION = '0.1.%s' %'120119-1517'
 
 USERNAME = getpass.getuser()
 
@@ -211,6 +212,9 @@ class Note(object):
         self.page = page
         self.pos = pos
         self.uid = uid
+        self.cdate = datetime.datetime.now()
+        #self.cdate.replace(microsecond = 0)
+        self.mdate = self.cdate
 
         self.tex_source = u''
 
@@ -544,6 +548,7 @@ class ImageLabel(QtGui.QLabel):
         if self.move:
             note = self.notes[self.closest_id]
             note.pos = self.px2pt(event.x() - x_offset, event.y())
+            note.mdate = datetime.datetime.now()
             self.parent.update_image()
             self.move = False
         if not self.rubber_band.size().isEmpty():
@@ -642,6 +647,7 @@ class ImageLabel(QtGui.QLabel):
         """
         #print "Editing note %d\n" % self.closest_id
         self.current_uid = self.closest_id
+        self.notes[self.current_uid].mdate = datetime.datetime.now()
 
     def slot_move_note(self):
         """
@@ -1205,6 +1211,8 @@ class MainWindow(QtGui.QMainWindow):
                         note = Note(text, preamble, page = pg, pos = pos,
                                     uid = uid)
                         notes[uid] = note
+                        note.cdate = datetime.datetime.strptime(cdate, "%Y-%m-%dT%H:%M:%S")
+                        note.mdate = datetime.datetime.strptime(mdate, "%Y-%m-%dT%H:%M:%S")
                         note.update()
                     else:
                         self.okular_notes += [ annot ]
@@ -1328,12 +1336,12 @@ class MainWindow(QtGui.QMainWindow):
                 annot.set('type', '1')
 
                 base = xml.SubElement(annot, 'base')
-                base.set('creationDate', '2011-12-02T18:59:49') #BOGUS DATE
+                base.set('creationDate', note.cdate.isoformat()) #BOGUS DATE
                 base.set('uniqueName', 'notorius-%d-%d' % (note.page, note.uid))
                 base.set('author', USERNAME)
                 base.set('contents', note.text)
                 base.set('preamble', note.preamble)
-                base.set('modifyDate', '2011-12-02T18:59:49') #BOGUS DATE
+                base.set('modifyDate', note.mdate.isoformat()) #BOGUS DATE
                 base.set('color', '#ffff00')
 
                 boundary = xml.SubElement(base, 'boundary')
@@ -1420,8 +1428,6 @@ class MainWindow(QtGui.QMainWindow):
         self.annotationDockWidget.setWindowTitle('Note %d'
                                                         % self.current_note.uid)
         self.slot_force_compile()
-        #for note in self.documentWidget.ImgLabel.notes.values():
-            #print note.text
 
     def slot_remove_note(self):
         """
