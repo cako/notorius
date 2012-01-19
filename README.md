@@ -131,7 +131,7 @@ After the installation, the `-dev` libraries and `g++` can be uninstalled:
 Uninstallation
 --------------
 
-Currently, only the Ubuntu script supports automated installation. Download it
+Currently, only the Ubuntu script supports an automated uninstall. Download it
 from [the downloads](https://github.com/downloads/cako/notorius/uninstall_notorius_ubuntu.sh) and run it.
 
 License
