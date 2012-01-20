@@ -28,7 +28,7 @@ import datetime
 import popplerqt4
 import zipfile
 
-#import window_ui
+from window_ui import Ui_MainWindow
 from preamble_window import PreambleWindow
 from offset_window import OffsetWindow
 from document_widget import DocumentWidget
@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml, uic
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'120120-1915'
+VERSION = '0.1.%s' %'120120-1946'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -50,20 +50,21 @@ class MainWindow(QtGui.QMainWindow):
     add_windows_trigger = QtCore.pyqtSignal(list)
 
     def highlight_buttons(self, event):
-        if self.previousPageButton.underMouse():
-            self.previousPageButton.setFlat(False)
+        if self.ui.previousPageButton.underMouse():
+            self.ui.previousPageButton.setFlat(False)
         else:
-            self.previousPageButton.setFlat(True)
+            self.ui.previousPageButton.setFlat(True)
 
-        if self.nextPageButton.underMouse():
-            self.nextPageButton.setFlat(False)
+        if self.ui.nextPageButton.underMouse():
+            self.ui.nextPageButton.setFlat(False)
         else:
-            self.nextPageButton.setFlat(True)
+            self.ui.nextPageButton.setFlat(True)
 
     def __init__(self, parent=None, document = None):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(os.path.join(DIR, 'window.ui'), self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(':img/note64.png'))
         self._preamble = PREAMBLE
         self.offset = 0
@@ -73,130 +74,130 @@ class MainWindow(QtGui.QMainWindow):
         self.okular_notes = []
 
         # Toolbar icons
-        self.actionOpen.setIcon(QtGui.QIcon.fromTheme("document-open"))
-        self.actionExport.setIcon(QtGui.QIcon.fromTheme("document-save-as"))
-        self.actionQuit.setIcon(QtGui.QIcon.fromTheme("application-exit"))
+        self.ui.actionOpen.setIcon(QtGui.QIcon.fromTheme("document-open"))
+        self.ui.actionExport.setIcon(QtGui.QIcon.fromTheme("document-save-as"))
+        self.ui.actionQuit.setIcon(QtGui.QIcon.fromTheme("application-exit"))
 
-        self.actionPreambleEditor.setIcon(QtGui.QIcon.fromTheme(
+        self.ui.actionPreambleEditor.setIcon(QtGui.QIcon.fromTheme(
                                                         "preferences-other"))
 
-        self.actionAbout.setIcon(QtGui.QIcon.fromTheme("help-about"))
+        self.ui.actionAbout.setIcon(QtGui.QIcon.fromTheme("help-about"))
 
         # Toolbar connections
-        self.connect(self.actionOpen, QtCore.SIGNAL("triggered()"),
+        self.connect(self.ui.actionOpen, QtCore.SIGNAL("triggered()"),
                      self.slot_gui_open)
-        self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),
+        self.connect(self.ui.actionExport, QtCore.SIGNAL("triggered()"),
                      self.slot_export)
-        self.connect(self.actionQuit, QtCore.SIGNAL("triggered()"),
+        self.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered()"),
                      self.close)
 
-        self.connect(self.actionControls,
+        self.connect(self.ui.actionControls,
                      QtCore.SIGNAL("toggled(bool)"),
-                     self.controlsWidget.setVisible)
-        self.connect(self.actionAnnotationSource,
+                     self.ui.controlsWidget.setVisible)
+        self.connect(self.ui.actionAnnotationSource,
                      QtCore.SIGNAL("toggled(bool)"),
-                     self.annotationSourceDockWidget.setVisible)
-        self.connect(self.actionAnnotation,
+                     self.ui.annotationSourceDockWidget.setVisible)
+        self.connect(self.ui.actionAnnotation,
                      QtCore.SIGNAL("toggled(bool)"),
-                     self.annotationDockWidget.setVisible)
-        self.connect(self.controlsWidget,
+                     self.ui.annotationDockWidget.setVisible)
+        self.connect(self.ui.controlsWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_controls)
-        self.connect(self.annotationDockWidget,
+        self.connect(self.ui.annotationDockWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_annotation)
-        self.connect(self.annotationSourceDockWidget,
+        self.connect(self.ui.annotationSourceDockWidget,
                      QtCore.SIGNAL("visibilityChanged(bool)"),
                      self.slot_hide_annotation_source)
 
-        self.connect(self.actionAbout, QtCore.SIGNAL("triggered()"),
+        self.connect(self.ui.actionAbout, QtCore.SIGNAL("triggered()"),
                      self.slot_about)
 
         # Document controls
         if PLATFORM == 'Windows':
-            self.previousPageButton.setText('Previous')
-            self.nextPageButton.setText('Next')
+            self.ui.previousPageButton.setText('Previous')
+            self.ui.nextPageButton.setText('Next')
             font_metrics = QtGui.QFontMetrics(QtGui.QFont())
             size_p = font_metrics.size(QtCore.Qt.TextSingleLine, 'Previous')
             size_n = font_metrics.size(QtCore.Qt.TextSingleLine, 'Next')
-            self.previousPageButton.setMinimumWidth(size_p.width() + 10)
-            self.nextPageButton.setMinimumWidth(size_n.width() + 10)
+            self.ui.previousPageButton.setMinimumWidth(size_p.width() + 10)
+            self.ui.nextPageButton.setMinimumWidth(size_n.width() + 10)
         else:
-            self.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
-            self.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
-        self.controlsWidget.mouseMoveEvent = self.highlight_buttons
+            self.ui.previousPageButton.setIcon(QtGui.QIcon.fromTheme("go-previous"))
+            self.ui.nextPageButton.setIcon(QtGui.QIcon.fromTheme("go-next"))
+        self.ui.controlsWidget.mouseMoveEvent = self.highlight_buttons
 
         self.offsetWindow = OffsetWindow(self)
-        self.connect(self.offsetCheckBox, QtCore.SIGNAL("stateChanged(int)"),
+        self.connect(self.ui.offsetCheckBox, QtCore.SIGNAL("stateChanged(int)"),
                      self.offsetWindow.slot_open)
 
         # Search widget
-        self.searchWidget = SearchWidget(self.searchDockWidgetContents)
-        self.gridLayout_4.addWidget(self.searchWidget, 0, 0, 1, 1)
-        self.searchDockWidget.hide()
-        self.searchWidget.hide_trigger.connect(self.searchDockWidget.hide)
-        self.searchWidget.change_page_trigger.connect(self.pageSpinBox.setValue)
-        #self.searchWidget.show_trigger.connect(self.searchDockWidget.show)
+        self.ui.searchWidget = SearchWidget(self.ui.searchDockWidgetContents)
+        self.ui.gridLayout_4.addWidget(self.ui.searchWidget, 0, 0, 1, 1)
+        self.ui.searchDockWidget.hide()
+        self.ui.searchWidget.hide_trigger.connect(self.ui.searchDockWidget.hide)
+        self.ui.searchWidget.change_page_trigger.connect(self.ui.pageSpinBox.setValue)
+        #self.ui.searchWidget.show_trigger.connect(self.ui.searchDockWidget.show)
 
         # PDF viewer widget
-        self.scrollArea.setMinimumWidth(0)
-        self.documentWidget = DocumentWidget(self.scrollArea)
-        self.documentWidget.setObjectName("documentWidget")
-        self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
-        self.scrollArea.setWidget(self.documentWidget.ImgLabel)
-        self.connect(self.documentWidget.ImgLabel, QtCore.SIGNAL("dropped"),
+        self.ui.scrollArea.setMinimumWidth(0)
+        self.ui.documentWidget = DocumentWidget(self.ui.scrollArea)
+        self.ui.documentWidget.setObjectName("documentWidget")
+        self.ui.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
+        self.ui.scrollArea.setWidget(self.ui.documentWidget.ImgLabel)
+        self.connect(self.ui.documentWidget.ImgLabel, QtCore.SIGNAL("dropped"),
                                                                 self.slot_load_dropped)
-        self.documentWidget.ImgLabel.change_scale_trigger.connect(self.scaleSpinBox.setValue)
+        self.ui.documentWidget.ImgLabel.change_scale_trigger.connect(self.ui.scaleSpinBox.setValue)
 
         # Connections for PDF viewer
-        self.connect(self.previousPageButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.previousPageButton, QtCore.SIGNAL("clicked()"),
                      self.slot_prev_page)
-        self.connect(self.nextPageButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.nextPageButton, QtCore.SIGNAL("clicked()"),
                      self.slot_next_page)
-        self.connect(self.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
-                     self.documentWidget.change_page)
-        self.connect(self.scaleSpinBox, QtCore.SIGNAL("valueChanged(double)"),
-                    self.documentWidget.set_scale)
-        self.connect(self.scaleComboBox,
+        self.connect(self.ui.pageSpinBox, QtCore.SIGNAL("valueChanged(int)"),
+                     self.ui.documentWidget.change_page)
+        self.connect(self.ui.scaleSpinBox, QtCore.SIGNAL("valueChanged(double)"),
+                    self.ui.documentWidget.set_scale)
+        self.connect(self.ui.scaleComboBox,
                      QtCore.SIGNAL("currentIndexChanged(int)"),
                      self.slot_scale)
 
         # Scroll Widget for annotation
-        self.scrollAreaAnnotation = QtGui.QScrollArea(self.annotationDockWidget)
-        self.scrollAreaAnnotation.setWidgetResizable(True)
-        self.scrollAreaAnnotation.setObjectName("scrollAreaAnnotation")
-        self.gridLayoutAnnotationDock.addWidget(self.scrollAreaAnnotation,
+        self.ui.scrollAreaAnnotation = QtGui.QScrollArea(self.ui.annotationDockWidget)
+        self.ui.scrollAreaAnnotation.setWidgetResizable(True)
+        self.ui.scrollAreaAnnotation.setObjectName("scrollAreaAnnotation")
+        self.ui.gridLayoutAnnotationDock.addWidget(self.ui.scrollAreaAnnotation,
                                                 0, 0, 1, 1)
 
         # Beginning note
         self.current_note = Note(WELCOME, self.preamble)
 
         # Annotation PNG widget
-        self.annotationWidget = AnnotationWidget(self.scrollAreaAnnotation,
+        self.ui.annotationWidget = AnnotationWidget(self.ui.scrollAreaAnnotation,
                                                  self.current_note.icon)
-        self.annotationWidget.setObjectName("annotationWidget")
+        self.ui.annotationWidget.setObjectName("annotationWidget")
 
-        self.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
-        self.scrollAreaAnnotation.setWidget(self.annotationWidget.ImgLabel)
-        self.actionAnnotation.toggle()
+        self.ui.scrollAreaAnnotation.setBackgroundRole(QtGui.QPalette.Light)
+        self.ui.scrollAreaAnnotation.setWidget(self.ui.annotationWidget.ImgLabel)
+        self.ui.actionAnnotation.toggle()
 
         # Connections for Annotation widget
-        self.connect(self.compileButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.compileButton, QtCore.SIGNAL("clicked()"),
                      self.slot_force_compile)
 
         # Annotation Source Widget
-        self.annotationSourceTextEdit.setText(WELCOME)
-        self.connect(self.documentWidget.ImgLabel.addNoteAction,
+        self.ui.annotationSourceTextEdit.setText(WELCOME)
+        self.connect(self.ui.documentWidget.ImgLabel.addNoteAction,
                      QtCore.SIGNAL("triggered()"), self.slot_change_note)
-        self.connect(self.documentWidget.ImgLabel.editNoteAction,
+        self.connect(self.ui.documentWidget.ImgLabel.editNoteAction,
                      QtCore.SIGNAL("triggered()"), self.slot_change_note)
-        #self.connect(self.documentWidget.ImgLabel.removeNoteAction,
+        #self.connect(self.ui.documentWidget.ImgLabel.removeNoteAction,
                      #QtCore.SIGNAL("triggered()"), self.slot_remove_note)
-        self.documentWidget.ImgLabel.remove_trigger.connect(
+        self.ui.documentWidget.ImgLabel.remove_trigger.connect(
                                                     self.slot_remove_note)
-        self.documentWidget.ImgLabel.toggle_source_trigger.connect(
-                                        self.actionAnnotationSource.toggle)
-        self.actionAnnotationSource.toggle()
+        self.ui.documentWidget.ImgLabel.toggle_source_trigger.connect(
+                                        self.ui.actionAnnotationSource.toggle)
+        self.ui.actionAnnotationSource.toggle()
 
         # Connections for Annotation Source Widget
         self.timer = QtCore.QTimer()
@@ -207,11 +208,11 @@ class MainWindow(QtGui.QMainWindow):
 
         # Preamble editor
         self.preambleEditorWindow = PreambleWindow(self)
-        self.connect(self.actionPreambleEditor, QtCore.SIGNAL("triggered()"),
+        self.connect(self.ui.actionPreambleEditor, QtCore.SIGNAL("triggered()"),
                      self.preambleEditorWindow.slot_open)
 
         # Status bar
-        self.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+        self.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                     self.slot_set_status)
 
         if document is not None:
@@ -273,7 +274,7 @@ class MainWindow(QtGui.QMainWindow):
                 annotlist = page.find('annotationList')
                 for annot in annotlist.findall('annotation'):
                     if ( annot.attrib['type'] == "1" and
-                                        pg <= self.documentWidget.num_pages ):
+                                        pg <= self.ui.documentWidget.num_pages ):
                         base = annot.find('base')
                         try:
                             author = base.attrib['author']
@@ -308,7 +309,7 @@ class MainWindow(QtGui.QMainWindow):
                         boundary = base.find('boundary')
                         x = float(boundary.attrib['l'])
                         y = float(boundary.attrib['t'])
-                        size = self.documentWidget.Document.page(
+                        size = self.ui.documentWidget.Document.page(
                                                         pg).pageSizeF()
                         pos = QtCore.QPointF(x*size.width(),
                                              y*size.height())
@@ -323,13 +324,13 @@ class MainWindow(QtGui.QMainWindow):
             return notes
         loaded = False
         if filename:
-            self.nextPageButton.setEnabled(True)
-            self.previousPageButton.setEnabled(True)
-            self.pageSpinBox.setEnabled(True)
-            self.offsetCheckBox.setEnabled(True)
-            self.offsetCheckBox.setChecked(False)
-            self.scaleSpinBox.setEnabled(True)
-            self.scaleComboBox.setEnabled(True)
+            self.ui.nextPageButton.setEnabled(True)
+            self.ui.previousPageButton.setEnabled(True)
+            self.ui.pageSpinBox.setEnabled(True)
+            self.ui.offsetCheckBox.setEnabled(True)
+            self.ui.offsetCheckBox.setChecked(False)
+            self.ui.scaleSpinBox.setEnabled(True)
+            self.ui.scaleComboBox.setEnabled(True)
             #file_dir = os.path.dirname(filename)
             self.okular_notes = []
             if filename.endswith('.zip') or filename.endswith('.okular'):
@@ -344,14 +345,14 @@ class MainWindow(QtGui.QMainWindow):
                                             [ fl for fl in zipf.namelist() if (
                                             fl.rsplit('.')[1] != 'xml') ][0])
                 # Must insert try statement!
-                self.documentWidget.load_document(self.docpath)
+                self.ui.documentWidget.load_document(self.docpath)
                 loaded = True
                 root = xml.parse(os.path.join(TMPDIR, 'metadata.xml')).getroot()
                 notes = parse_metadata(root)
                 for aux in ['content.xml', 'metadata.xml']:
                     os.remove(os.path.join(TMPDIR, aux))
-                self.documentWidget.ImgLabel.notes = notes
-                self.documentWidget.update_image()
+                self.ui.documentWidget.ImgLabel.notes = notes
+                self.ui.documentWidget.update_image()
                 self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
                 if self.okular_notes:
                     warning = 'Not loading annotations that are '
@@ -365,8 +366,8 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     self.rmdoc = False
                     root = xml.parse(filename).getroot()
-                    self.documentWidget.ImgLabel.notes = parse_metadata(root)
-                    self.documentWidget.update_image()
+                    self.ui.documentWidget.ImgLabel.notes = parse_metadata(root)
+                    self.ui.documentWidget.update_image()
                     loaded = True
                     self.setWindowTitle(
                         'Notorius - %s + %s' % (os.path.basename(self.docpath),
@@ -380,19 +381,19 @@ class MainWindow(QtGui.QMainWindow):
                     print "Treating file as pdf!"
                 self.rmdoc = False
                 self.docpath = filename
-                self.documentWidget.load_document(self.docpath)
+                self.ui.documentWidget.load_document(self.docpath)
                 self.setWindowTitle('Notorius - %s' %os.path.basename(filename))
                 loaded = True
 
             if loaded:
-                self.pageSpinBox.setValue(1)
-                self.pageSpinBox.setMinimum(-self.documentWidget.num_pages + 1)
-                self.pageSpinBox.setMaximum(self.documentWidget.num_pages)
-                self.scaleComboBox.setCurrentIndex(0)
-                self.maxPageLabel.setText("of %d" %
-                                          self.documentWidget.num_pages)
-                self.actionExport.setEnabled(True)
-                self.searchWidget.documentWidget = self.documentWidget
+                self.ui.pageSpinBox.setValue(1)
+                self.ui.pageSpinBox.setMinimum(-self.ui.documentWidget.num_pages + 1)
+                self.ui.pageSpinBox.setMaximum(self.ui.documentWidget.num_pages)
+                self.ui.scaleComboBox.setCurrentIndex(0)
+                self.ui.maxPageLabel.setText("of %d" %
+                                          self.ui.documentWidget.num_pages)
+                self.ui.actionExport.setEnabled(True)
+                self.ui.searchWidget.documentWidget = self.ui.documentWidget
                 self.statusBar().showMessage('Opened file %s.' % filename)
         else:
             print 'No file to load!'
@@ -424,7 +425,7 @@ class MainWindow(QtGui.QMainWindow):
                 metadata_path = filename
             root = xml.Element('documentInfo')
             pagelist = xml.SubElement(root, 'pageList')
-            notes = self.documentWidget.ImgLabel.notes
+            notes = self.ui.documentWidget.ImgLabel.notes
             for note in notes.values():
                 try:
                     page = [ pg for pg in pagelist if (
@@ -449,7 +450,7 @@ class MainWindow(QtGui.QMainWindow):
                 base.set('color', '#ffff00')
 
                 boundary = xml.SubElement(base, 'boundary')
-                size = self.documentWidget.Document.page(note.page).pageSizeF()
+                size = self.ui.documentWidget.Document.page(note.page).pageSizeF()
                 posx = note.pos.x()/size.width()
                 posy = note.pos.y()/size.height()
                 boundary.set('l', str(posx))
@@ -519,17 +520,17 @@ class MainWindow(QtGui.QMainWindow):
         Slot to add or edit note. Replaces current note display in
         annotationSourceTextEdit and annotationWidget with the new note.
         """
-        self.annotationSourceDockWidget.show()
-        self.actionAnnotationSource.setChecked(True)
-        uid = self.documentWidget.ImgLabel.current_uid
+        self.ui.annotationSourceDockWidget.show()
+        self.ui.actionAnnotationSource.setChecked(True)
+        uid = self.ui.documentWidget.ImgLabel.current_uid
         if (self.displayed_uid != -1 and self.displayed_uid != -2):
-            text = unicode(self.annotationSourceTextEdit.toPlainText())
+            text = unicode(self.ui.annotationSourceTextEdit.toPlainText())
             self.current_note.text = text
-        self.current_note = self.documentWidget.ImgLabel.notes[uid]
-        self.annotationSourceTextEdit.setText(self.current_note.text)
-        self.annotationSourceDockWidget.setWindowTitle('Note %d'
+        self.current_note = self.ui.documentWidget.ImgLabel.notes[uid]
+        self.ui.annotationSourceTextEdit.setText(self.current_note.text)
+        self.ui.annotationSourceDockWidget.setWindowTitle('Note %d'
                                                         % self.current_note.uid)
-        self.annotationDockWidget.setWindowTitle('Note %d'
+        self.ui.annotationDockWidget.setWindowTitle('Note %d'
                                                         % self.current_note.uid)
         self.slot_force_compile()
 
@@ -538,60 +539,60 @@ class MainWindow(QtGui.QMainWindow):
         Removes note along with all its files. If the  current note is being
         replaced, blank annotationSourceTextEdit and annotationWidget.
         """
-        uid = self.documentWidget.ImgLabel.closest_id
-        #print 'Current note: %d' % self.documentWidget.ImgLabel.current_uid
-        self.documentWidget.ImgLabel.notes[uid].remove_files()
-        self.documentWidget.ImgLabel.notes[uid].remove_png()
+        uid = self.ui.documentWidget.ImgLabel.closest_id
+        #print 'Current note: %d' % self.ui.documentWidget.ImgLabel.current_uid
+        self.ui.documentWidget.ImgLabel.notes[uid].remove_files()
+        self.ui.documentWidget.ImgLabel.notes[uid].remove_png()
         #print 'Main remove note %d' % uid
-        if self.documentWidget.ImgLabel.current_uid == uid:
-            self.annotationSourceTextEdit.setText('')
+        if self.ui.documentWidget.ImgLabel.current_uid == uid:
+            self.ui.annotationSourceTextEdit.setText('')
             white_pix = QtGui.QPixmap()
             white_pix.fill()
-            self.annotationWidget.ImgLabel.setPixmap(white_pix)
-            self.documentWidget.ImgLabel.displayed_uid = -2
-            self.documentWidget.ImgLabel.current_uid = -2
-            self.annotationSourceDockWidget.setWindowTitle('')
-            self.annotationDockWidget.setWindowTitle('')
-        del self.documentWidget.ImgLabel.notes[uid]
-        self.documentWidget.update_image()
+            self.ui.annotationWidget.ImgLabel.setPixmap(white_pix)
+            self.ui.documentWidget.ImgLabel.displayed_uid = -2
+            self.ui.documentWidget.ImgLabel.current_uid = -2
+            self.ui.annotationSourceDockWidget.setWindowTitle('')
+            self.ui.annotationDockWidget.setWindowTitle('')
+        del self.ui.documentWidget.ImgLabel.notes[uid]
+        self.ui.documentWidget.update_image()
 
     def slot_hide_controls(self):
         """ Slot to hide controls properly and avoid recursion. """
-        if self.controlsWidget.isVisible():
-            self.actionControls.setChecked(True)
-        if self.annotationDockWidget.isHidden():
-            self.actionControls.setChecked(False)
+        if self.ui.controlsWidget.isVisible():
+            self.ui.actionControls.setChecked(True)
+        if self.ui.annotationDockWidget.isHidden():
+            self.ui.actionControls.setChecked(False)
 
     def slot_hide_annotation(self):
         """ Slot to hide annotation properly and avoid recursion. """
-        if self.annotationDockWidget.isVisible():
-            self.actionAnnotation.setChecked(True)
-        if self.annotationDockWidget.isHidden():
-            self.actionAnnotation.setChecked(False)
+        if self.ui.annotationDockWidget.isVisible():
+            self.ui.actionAnnotation.setChecked(True)
+        if self.ui.annotationDockWidget.isHidden():
+            self.ui.actionAnnotation.setChecked(False)
 
     def slot_hide_annotation_source(self):
         """ Slot to hide annotation source properly and avoid recursion. """
-        if self.annotationSourceDockWidget.isVisible():
-            self.actionAnnotationSource.setChecked(True)
-        if self.annotationSourceDockWidget.isHidden():
-            self.actionAnnotationSource.setChecked(False)
+        if self.ui.annotationSourceDockWidget.isVisible():
+            self.ui.actionAnnotationSource.setChecked(True)
+        if self.ui.annotationSourceDockWidget.isHidden():
+            self.ui.actionAnnotationSource.setChecked(False)
 
     def slot_prev_page(self):
         """ Slot to go to the previous page. """
-        self.pageSpinBox.setValue(self.pageSpinBox.value() - 1)
+        self.ui.pageSpinBox.setValue(self.ui.pageSpinBox.value() - 1)
 
     def slot_next_page(self):
         """ Slot to go to the next page. """
-        self.pageSpinBox.setValue(self.pageSpinBox.value() + 1)
+        self.ui.pageSpinBox.setValue(self.ui.pageSpinBox.value() + 1)
 
     def slot_scale(self, event):
         """ Slot to change the scale. """
         if event == 0:
-            self.scaleSpinBox.setEnabled(True)
-            self.documentWidget.set_scale(self.scaleSpinBox.value())
+            self.ui.scaleSpinBox.setEnabled(True)
+            self.ui.documentWidget.set_scale(self.ui.scaleSpinBox.value())
         else:
-            self.scaleSpinBox.setEnabled(False)
-            self.documentWidget.fit_to_width_or_height(event)
+            self.ui.scaleSpinBox.setEnabled(False)
+            self.ui.documentWidget.fit_to_width_or_height(event)
 
     def slot_force_compile(self):
         """ Slot to force compilation through the compileButton. """
@@ -603,39 +604,39 @@ class MainWindow(QtGui.QMainWindow):
         Slot to compile the current annotation by changing annotationWidget's
         ImgLabel's Pixmap to the updated one.
         """
-        text = unicode(self.annotationSourceTextEdit.toPlainText())
+        text = unicode(self.ui.annotationSourceTextEdit.toPlainText())
         if (self.old_text != text and
-            self.documentWidget.ImgLabel.current_uid  != -2):
+            self.ui.documentWidget.ImgLabel.current_uid  != -2):
             self.old_text = text
             self.current_note.remove_png()
             self.current_note.text = text
             self.current_note.update()
             self.displayed_uid = self.current_note.uid
-            self.annotationWidget.ImgLabel.setPixmap(
+            self.ui.annotationWidget.ImgLabel.setPixmap(
                                             self.current_note.icon)
 
     def keyPressEvent(self, event):
         if self.docpath != '':
             if (event.matches(QtGui.QKeySequence.Find) or
                                             event.key() == QtCore.Qt.Key_Slash):
-                self.searchDockWidget.show()
-                self.searchWidget.searchLineEdit.selectAll()
-                self.searchWidget.searchLineEdit.setFocus()
+                self.ui.searchDockWidget.show()
+                self.ui.searchWidget.searchLineEdit.selectAll()
+                self.ui.searchWidget.searchLineEdit.setFocus()
             elif event.key() == QtCore.Qt.Key_Escape:
-                self.searchDockWidget.hide()
+                self.ui.searchDockWidget.hide()
 
     def resizeEvent(self, event):
         """ Slot to adjust widgets when MainWindow is resized. """
-        if self.scaleComboBox.currentIndex() == 1:
-            self.documentWidget.fit_to_width_or_height(1)
-        elif self.scaleComboBox.currentIndex() == 2:
-            self.documentWidget.fit_to_width_or_height(2)
+        if self.ui.scaleComboBox.currentIndex() == 1:
+            self.ui.documentWidget.fit_to_width_or_height(1)
+        elif self.ui.scaleComboBox.currentIndex() == 2:
+            self.ui.documentWidget.fit_to_width_or_height(2)
 
     def closeEvent(self, event):
         """
         On close, cleanup files.
         """
-        for note in self.documentWidget.ImgLabel.notes.values():
+        for note in self.ui.documentWidget.ImgLabel.notes.values():
             note.remove_files()
             note.remove_png()
         self.current_note.remove_files()

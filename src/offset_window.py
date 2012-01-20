@@ -55,26 +55,26 @@ class OffsetWindow(QtGui.QMainWindow):
         # On
         if event == 2:
             self.offset = self.parent.offset
-            self.ui.offsetSpinBox.setValue(self.parent.pageSpinBox.value() +
+            self.ui.offsetSpinBox.setValue(self.parent.ui.pageSpinBox.value() +
                                         self.offset)
             self.show()
         # Off
         else:
             old = self.offset
-            page = self.parent.pageSpinBox.value() - old
+            page = self.parent.ui.pageSpinBox.value() - old
             self.offset = 0
-            self.parent.documentWidget.offset = 0
-            self.parent.maxPageLabel.setText("of %d" %
-                            self.parent.documentWidget.num_pages)
-            self.parent.pageSpinBox.setMaximum(
-                                        self.parent.pageSpinBox.maximum() - old)
-            self.parent.pageSpinBox.setMinimum(
-                                        self.parent.pageSpinBox.minimum() - old)
-            self.parent.pageSpinBox.setValue(page)
+            self.parent.ui.documentWidget.offset = 0
+            self.parent.ui.maxPageLabel.setText("of %d" %
+                            self.parent.ui.documentWidget.num_pages)
+            self.parent.ui.pageSpinBox.setMaximum(
+                                        self.parent.ui.pageSpinBox.maximum() - old)
+            self.parent.ui.pageSpinBox.setMinimum(
+                                        self.parent.ui.pageSpinBox.minimum() - old)
+            self.parent.ui.pageSpinBox.setValue(page)
 
     def slot_cancel(self):
         """ Slot for cancel button. Closes window without saving. """
-        self.parent.offsetCheckBox.setChecked(False)
+        self.parent.ui.offsetCheckBox.setChecked(False)
         self.close()
 
     def slot_ok(self):
@@ -82,15 +82,15 @@ class OffsetWindow(QtGui.QMainWindow):
         Slot for ok button. It stores the value in the preamble QTextEdit
         window.
         """
-        self.offset = self.ui.offsetSpinBox.value()-self.parent.pageSpinBox.value()
+        self.offset = self.ui.offsetSpinBox.value()-self.parent.ui.pageSpinBox.value()
         #print 'Offset %d.' % self.offset
-        self.parent.documentWidget.offset = self.offset
-        self.parent.maxPageLabel.setText("of %d" %
-                        (self.parent.documentWidget.num_pages + self.offset))
-        self.parent.pageSpinBox.setMaximum(self.parent.pageSpinBox.maximum() +
+        self.parent.ui.documentWidget.offset = self.offset
+        self.parent.ui.maxPageLabel.setText("of %d" %
+                        (self.parent.ui.documentWidget.num_pages + self.offset))
+        self.parent.ui.pageSpinBox.setMaximum(self.parent.ui.pageSpinBox.maximum() +
                                            self.offset)
-        #print 'Minimum %d' %  self.parent.pageSpinBox.minimum()
-        self.parent.pageSpinBox.setMinimum(self.parent.pageSpinBox.minimum() +
+        #print 'Minimum %d' %  self.parent.ui.pageSpinBox.minimum()
+        self.parent.ui.pageSpinBox.setMinimum(self.parent.ui.pageSpinBox.minimum() +
                                            self.offset)
-        self.parent.pageSpinBox.setValue(self.ui.offsetSpinBox.value())
+        self.parent.ui.pageSpinBox.setValue(self.ui.offsetSpinBox.value())
         self.close()

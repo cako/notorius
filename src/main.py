@@ -42,7 +42,7 @@ class Application(QtGui.QApplication):
                 self.windows += [win]
         else:
             win = window.MainWindow()
-            win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                 self.slot_set_clipboard)
             win.add_windows_trigger.connect(self.slot_add_windows)
             win.show()
@@ -55,7 +55,7 @@ class Application(QtGui.QApplication):
 
     def slot_add_windows(self, windows):
         for win in windows:
-            win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                 self.slot_set_clipboard)
             self.windows.append(win)
 
