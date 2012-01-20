@@ -29,8 +29,11 @@ import os
 import popplerqt4
 import subprocess
 import zipfile
+
+from icons import *
+
 from platform import system as systemplat
-from PyQt4 import QtCore, QtGui, uic
+from PyQt4 import QtCore, QtGui, QtXml, uic
 from random import randint
 from xml.etree import ElementTree as xml
 
@@ -99,7 +102,7 @@ class PreambleWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(os.path.join(DIR, 'preamble_editor_window.ui'), self)
+        uic.loadUi(os.path.join(DIR, 'preamble_window.ui'), self)
         self.parent = parent
         self.preamble = unicode(preamble)
         self.setStatusBar(None)
@@ -407,7 +410,7 @@ class ImageLabel(QtGui.QLabel):
         self.move = False
         self.drag = False
         self.control = False
-        self.noteImage = QtGui.QImage(os.path.join(DIR, 'img/note22.png'))
+        self.noteImage = QtGui.QImage(':img/note22.png')
         self.rubber_band = QtGui.QRubberBand( QtGui.QRubberBand.Rectangle, self)
         self.drag_position = QtCore.QPoint()
 
@@ -960,7 +963,7 @@ class MainWindow(QtGui.QMainWindow):
         """ Initialize MainWindow """
         QtGui.QMainWindow.__init__(self, parent)
         uic.loadUi(os.path.join(DIR, 'window.ui'), self)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(DIR, 'img/note64.png')))
+        self.setWindowIcon(QtGui.QIcon(':img/note64.png'))
         self._preamble = PREAMBLE
         self.offset = 0
         self.docpath = ''
