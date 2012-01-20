@@ -36,7 +36,6 @@ class PreambleWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        #uic.loadUi(os.path.join(DIR, 'preamble_window.ui'), self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.parent = parent
