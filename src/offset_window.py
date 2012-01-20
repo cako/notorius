@@ -25,6 +25,7 @@
 
 from PyQt4 import QtCore, QtGui, QtXml, uic
 
+from offset_window_ui import Ui_MainWindow
 from constants import *
 
 class OffsetWindow(QtGui.QMainWindow):
@@ -33,16 +34,18 @@ class OffsetWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(os.path.join(DIR, 'offset_window.ui'), self)
+        #uic.loadUi(os.path.join(DIR, 'offset_window.ui'), self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
         self.parent = parent
         self.offset = 0
         self.setStatusBar(None)
-        self.okButton.setDefault(True)
+        self.ui.okButton.setDefault(True)
 
-        self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
                      self.slot_cancel)
 
-        self.connect(self.okButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.okButton, QtCore.SIGNAL("clicked()"),
                      self.slot_ok)
 
     def slot_open(self, event):
@@ -53,7 +56,7 @@ class OffsetWindow(QtGui.QMainWindow):
         # On
         if event == 2:
             self.offset = self.parent.offset
-            self.offsetSpinBox.setValue(self.parent.pageSpinBox.value() +
+            self.ui.offsetSpinBox.setValue(self.parent.pageSpinBox.value() +
                                         self.offset)
             self.show()
         # Off
@@ -72,6 +75,7 @@ class OffsetWindow(QtGui.QMainWindow):
 
     def slot_cancel(self):
         """ Slot for cancel button. Closes window without saving. """
+        self.parent.offsetCheckBox.setChecked(False)
         self.close()
 
     def slot_ok(self):
@@ -79,7 +83,7 @@ class OffsetWindow(QtGui.QMainWindow):
         Slot for ok button. It stores the value in the preamble QTextEdit
         window.
         """
-        self.offset = self.offsetSpinBox.value()-self.parent.pageSpinBox.value()
+        self.offset = self.ui.offsetSpinBox.value()-self.parent.pageSpinBox.value()
         #print 'Offset %d.' % self.offset
         self.parent.documentWidget.offset = self.offset
         self.parent.maxPageLabel.setText("of %d" %
@@ -89,5 +93,5 @@ class OffsetWindow(QtGui.QMainWindow):
         #print 'Minimum %d' %  self.parent.pageSpinBox.minimum()
         self.parent.pageSpinBox.setMinimum(self.parent.pageSpinBox.minimum() +
                                            self.offset)
-        self.parent.pageSpinBox.setValue(self.offsetSpinBox.value())
+        self.parent.pageSpinBox.setValue(self.ui.offsetSpinBox.value())
         self.close()
