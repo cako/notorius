@@ -26,6 +26,7 @@
 import os
 from PyQt4 import QtCore, QtGui, QtXml, uic
 
+from preamble_window_ui import Ui_MainWindow
 from constants import *
 
 
@@ -35,15 +36,17 @@ class PreambleWindow(QtGui.QMainWindow):
     """
     def __init__(self, parent = None, preamble = PREAMBLE):
         QtGui.QMainWindow.__init__(self, parent)
-        uic.loadUi(os.path.join(DIR, 'preamble_window.ui'), self)
+        #uic.loadUi(os.path.join(DIR, 'preamble_window.ui'), self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
         self.parent = parent
         self.preamble = unicode(preamble)
         self.setStatusBar(None)
 
-        self.connect(self.cancelButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
                      self.slot_cancel)
 
-        self.connect(self.saveButton, QtCore.SIGNAL("clicked()"),
+        self.connect(self.ui.saveButton, QtCore.SIGNAL("clicked()"),
                      self.slot_save)
 
     def slot_open(self):
@@ -52,7 +55,7 @@ class PreambleWindow(QtGui.QMainWindow):
         saved preamble.
         """
         self.preamble = self.parent.preamble
-        self.preambleTextEdit.setText(self.preamble)
+        self.ui.preambleTextEdit.setText(self.preamble)
         self.show()
 
     def slot_cancel(self):
