@@ -24,7 +24,7 @@
 """ Image Label. """
 
 import datetime
-from PyQt4 import QtCore, QtGui, QtXml, uic
+from PyQt4 import QtCore, QtGui
 
 from note import Note
 from constants import *

@@ -23,7 +23,7 @@
 
 """ Offset Window. """
 
-from PyQt4 import QtCore, QtGui, QtXml, uic
+from PyQt4 import QtCore, QtGui
 
 from offset_window_ui import Ui_MainWindow
 from constants import *
