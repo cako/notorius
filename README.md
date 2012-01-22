@@ -32,11 +32,11 @@ Installation
 ------------
 ### Linux
 
-Get a TeX distribution and ImageMagick with
+Get a TeX distribution and ImageMagick. In Debian based distros:
 
     sudo apt-get install texlive-latex-base imagemagick
 
-in Ubuntu. Then download the appropriate binary: 32-bit,
+Then download the appropriate binary: 32-bit,
 [64-bit](https://github.com/downloads/cako/notorius/notorius.64) (so far, only
 64-bit is offered) and run it!
 
