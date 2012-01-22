@@ -36,9 +36,9 @@ Get a TeX distribution and ImageMagick. In Debian based distros:
 
     sudo apt-get install texlive-latex-base imagemagick
 
-Then download the appropriate binary: 32-bit,
-[64-bit](https://github.com/downloads/cako/notorius/notorius.64) (so far, only
-64-bit is offered) and run it!
+Then download the appropriate binary:
+[32-bit](https://github.com/downloads/cako/notorius/notorius.32),
+[64-bit](https://github.com/downloads/cako/notorius/notorius.64) and run it!
 
 ### Windows
 
