@@ -32,13 +32,13 @@ Installation
 ------------
 ### Linux
 
-###### Debian-based distros
+#### Debian-based distros
 
 Get the deb for you architecture:
 [32-bit](https://github.com/downloads/cako/notorius/notorius-0.1_i386.deb),
 [64-bit](https://github.com/downloads/cako/notorius/notorius-0.1_amd64.deb). 
 
-###### Other distros
+#### Other distros
 
 Get a TeX distribution and ImageMagick. Then download the appropriate binary:
 [32-bit](https://github.com/downloads/cako/notorius/notorius.32),
