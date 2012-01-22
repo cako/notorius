@@ -32,11 +32,15 @@ Installation
 ------------
 ### Linux
 
-Get a TeX distribution and ImageMagick. In Debian based distros:
+###### Debian-based distros
 
-    sudo apt-get install texlive-latex-base imagemagick
+Get the deb for you architecture:
+[32-bit](https://github.com/downloads/cako/notorius/notorius-0.1_i386.deb),
+[64-bit](https://github.com/downloads/cako/notorius/notorius-0.1_amd64.deb). 
 
-Then download the appropriate binary:
+###### Other distros
+
+Get a TeX distribution and ImageMagick. Then download the appropriate binary:
 [32-bit](https://github.com/downloads/cako/notorius/notorius.32),
 [64-bit](https://github.com/downloads/cako/notorius/notorius.64) and run it!
 
