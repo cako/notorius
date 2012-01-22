@@ -66,6 +66,6 @@ class PreambleWindow(QtGui.QMainWindow):
         Slot for save button. It stores the value in the preamble QTextEdit
         window.
         """
-        self.preamble = unicode(self.preambleTextEdit.toPlainText())
+        self.preamble = unicode(self.ui.preambleTextEdit.toPlainText())
         self.parent.preamble = self.preamble
         self.close()
