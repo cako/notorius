@@ -30,15 +30,15 @@ archives or XML files.
 
 Installation
 ------------
-### Ubuntu
+### Linux
 
 Get a TeX distribution and ImageMagick with
 
     sudo apt-get install texlive-latex-base imagemagick
 
-and download the appropriate binary: 32-bit,
+in Ubuntu. Then download the appropriate binary: 32-bit,
 [64-bit](https://github.com/downloads/cako/notorius/notorius.64) (so far, only
-64-bit is offered).
+64-bit is offered) and run it!
 
 ### Windows
 
