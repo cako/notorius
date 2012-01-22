@@ -27,29 +27,22 @@ functional. You can open PDF, and Okular files, or simply import notes contained
 in an XML file on top of an already open PDF. Saving is also done through Okular
 archives or XML files.
 
-Requirements
-------------
-The requirements are below. For platform specific instructions see Installation.
-
-* [Python](http://www.python.org/download/) (versions 2.6 or 2.7)
-* [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
-* [python-poppler-qt4](http://code.google.com/p/python-poppler-qt4/)
-* [LaTeX](http://www.latex-project.org/)
-
-One of the following:
-
-* [dvipng](http://sourceforge.net/projects/dvipng/)
-* [ImageMagick](http://www.imagemagick.org/script/index.php) (necessary if you
-want to use `pdflatex` or `pslatex` (which are required for the `tikz` package,
-for example), but currently unavailable for Windows.)
-
 
 Installation
 ------------
+### Ubuntu
+
+Get a TeX distribution and ImageMagick with
+
+    sudo apt-get install texlive-latex-base imagemagick
+
+and download the appropriate binary: 32-bit, 64-bit (so far, only 64-bit is
+offered).
+
 ### Windows
 
-This has been tested with 32-bit Windows XP, but it should work on newer
-systems.
+An installer is coming! If you really want it now, you can get it following the
+instructions below. Be warned that it occupies a lot more space!
 
 Before anything make sure you have a LaTeX distribution. A common one for
 Windows is MikTeX, download it from the following website.
@@ -73,66 +66,6 @@ Now run it! Don't worry about dvipng, it comes with LaTeX.
 
     C:\Python27\pythonw.exe C:\Path\To\main.py
 
-
-### Ubuntu
-
-#### Automated
-
-For an automated installation, download and run the install script found
-[in the downloads](https://github.com/downloads/cako/notorius/install_notorius_ubuntu.sh).
-For the clueless,
-
-    chmod +x install_notorius_ubuntu.sh
-    ./install_notorius_ubuntu.sh
-
-Notorius will be in the menu under Applications>Office, but it can also be run
-from the command line with
-
-    notorius
-
-#### Manual
-
-First, you'll need a LaTeX distribution, if you don't already have one.
-
-    sudo apt-get install texlive-latex-base
-
-Second, you will need PyQt4. If you don't have it, install it with:
-
-    sudo apt-get install python-qt4
-
-Finally, you have to install `python-popper-qt4`. To build it, you will need to
-install the following libraries:
-
-    sudo apt-get install python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
-
-Then download it, unpack it, build and install:
-
-    wget http://code.google.com/p/python-poppler-qt4/downloads/detail?name=python-poppler-qt4-0.16.2.tar.gz
-    tar xvzf python-poppler-qt4-0.16.2.tar.gz
-    cd python-poppler-qt4-0.16.2/
-    python setup.py build
-    sudo python setup.py install
-
-It can also be installed with
-[`pip`](http://www.pip-installer.org/en/latest/index.html):
-
-    sudo pip install python-poppler-qt4
-
-If you want (recommended) install ImageMagick with
-
-    sudo apt-get install imagemagick
-
-After the installation, the `-dev` libraries and `g++` can be uninstalled:
-
-    sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
-    sudo apt-get autoremove
-
-
-Uninstallation
---------------
-
-Currently, only the Ubuntu script supports an automated uninstall. Download it
-from [the downloads](https://github.com/downloads/cako/notorius/uninstall_notorius_ubuntu.sh) and run it.
 
 License
 ------- 
