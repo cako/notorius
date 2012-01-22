@@ -39,10 +39,10 @@ from constants import *
 from icons import *
 
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'120120-2017'
+VERSION = '0.1.%s' %'120121-2227'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
