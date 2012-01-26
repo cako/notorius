@@ -42,23 +42,12 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'120126-0126'
+VERSION = '0.1.%s' %'120126-1342'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
 
     add_windows_trigger = QtCore.pyqtSignal(list)
-
-    def highlight_buttons(self, event):
-        if self.ui.previousPageButton.underMouse():
-            self.ui.previousPageButton.setFlat(False)
-        else:
-            self.ui.previousPageButton.setFlat(True)
-
-        if self.ui.nextPageButton.underMouse():
-            self.ui.nextPageButton.setFlat(False)
-        else:
-            self.ui.nextPageButton.setFlat(True)
 
     def __init__(self, parent=None, document = None):
         """ Initialize MainWindow """
@@ -226,6 +215,17 @@ class MainWindow(QtGui.QMainWindow):
         self._preamble = preamble
         self.current_note.preamble = preamble
         self.slot_compile_annotation()
+
+    def highlight_buttons(self, event):
+        if self.ui.previousPageButton.underMouse():
+            self.ui.previousPageButton.setFlat(False)
+        else:
+            self.ui.previousPageButton.setFlat(True)
+
+        if self.ui.nextPageButton.underMouse():
+            self.ui.nextPageButton.setFlat(False)
+        else:
+            self.ui.nextPageButton.setFlat(True)
 
     def slot_load_dropped(self, files):
         if self.docpath == '' or files[0].endswith('.xml'):
