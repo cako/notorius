@@ -254,20 +254,18 @@ class ImageLabel(QtGui.QLabel):
         Finds closest note to coordinates (x, y).
         Returns True if successful, False otherwise.
         """
-        found_it = False
         width = self.pt2px(self.parent.CurrentPage.pageSizeF())[0]
         x_offset = (self.rect().width() - width)/2.0
         if len(self.notes) != 0:
             for note in self.notes.values():
                 n_x = (note.pos.x() * self.parent.scale * DPI_X/72.0) + 11
-                n_y = (note.pos.y() * self.parent.scale * DPI_X/72.0) + 11
+                n_y = (note.pos.y() * self.parent.scale * DPI_Y/72.0) + 11
                 dx = abs(x - x_offset - n_x)
                 dy = abs(y - n_y)
                 if dx <= 11 and dy <= 11:
                     self.closest_id = note.uid
-                    found_it = True
-                    break
-        return found_it
+                    return True
+        return False
 
     def slot_add_note(self):
         """
