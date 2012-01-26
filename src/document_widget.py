@@ -112,10 +112,13 @@ class DocumentWidget(QtGui.QWidget):
                                                 background.height()),
                              QtGui.QColor(60, 60, 60))
             painter.drawImage(1, 1, self.Image)
-            painter.fillRect(QtCore.QRect(0, self.Image.height() + 2, 6, 4),
-                             QtGui.QColor(203, 201, 200))
-            painter.fillRect(QtCore.QRect(self.Image.width() + 2, 0, 4, 6),
-                             QtGui.QColor(203, 201, 200))
+            if PLATFORM == 'Windows':
+                grey = QtGui.QColor(172, 168, 153)
+            else:
+                grey = QtGui.QColor(203, 201, 200)
+
+            painter.fillRect(QtCore.QRect(0, self.Image.height()+2, 6, 4), grey)
+            painter.fillRect(QtCore.QRect(self.Image.width()+ 2, 0, 4, 6), grey)
 
             if self.highlights:
                 for rect, pg in self.highlights:

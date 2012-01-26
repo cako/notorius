@@ -146,6 +146,14 @@ class ImageLabel(QtGui.QLabel):
                 #print 'Drag note %d' %note.uid
                 note.pos = self.px2pt(event.x() - x_offset, event.y())
                 self.parent.update_image()
+            else:
+                if self.find_closest(event.x(), event.y()):
+                    note.generate_source()
+                    img_path =  note.filename.rstrip('tex') + 'border.png'
+                    QtGui.QToolTip.showText(event.globalPos(),
+                                            'Note %d: <br /> <img src="%s">'
+                                            % (note.uid, img_path),
+                                            self)
         else:
             if (event.x() >= x_offset) and (event.x() <= width + x_offset):
                 try:
@@ -163,13 +171,6 @@ class ImageLabel(QtGui.QLabel):
                 except IOError:
                     print 'IOError in rubberBand.setGeometry try.'
                     pass
-                if self.find_closest(event.x(), event.y()):
-                    note.generate_source()
-                    img_path =  note.filename.rstrip('tex') + 'border.png'
-                    QtGui.QToolTip.showText(event.globalPos(),
-                                            'Note %d: <br /> <img src="%s">'
-                                            % (note.uid, img_path),
-                                            self)
 
     def mousePressEvent(self, event):
         if self.parent.Document is None:
