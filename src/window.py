@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'120126-1342'
+VERSION = '0.1.%s' %'120126-1424'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -134,9 +134,14 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.documentWidget.setObjectName("documentWidget")
         self.ui.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
         self.ui.scrollArea.setWidget(self.ui.documentWidget.ImgLabel)
-        self.connect(self.ui.documentWidget.ImgLabel, QtCore.SIGNAL("dropped"),
-                                                                self.slot_load_dropped)
-        self.ui.documentWidget.ImgLabel.change_scale_trigger.connect(self.ui.scaleSpinBox.setValue)
+        self.connect(self.ui.documentWidget.ImgLabel,
+                     QtCore.SIGNAL("dropped"), self.slot_load_dropped)
+        self.ui.documentWidget.ImgLabel.change_scale_trigger.connect(
+                                                self.ui.scaleSpinBox.setValue)
+        self.ui.documentWidget.ImgLabel.show_search_trigger.connect(
+                                                self.slot_show_search_widget)
+        self.ui.documentWidget.ImgLabel.hide_search_trigger.connect(
+                                                self.ui.searchWidget.hide)
 
         # Connections for PDF viewer
         self.connect(self.ui.previousPageButton, QtCore.SIGNAL("clicked()"),
@@ -615,13 +620,19 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.annotationWidget.ImgLabel.setPixmap(
                                             self.current_note.icon)
 
+    def slot_show_search_widget(self):
+        self.ui.searchDockWidget.show()
+        self.ui.searchWidget.searchLineEdit.selectAll()
+        self.ui.searchWidget.searchLineEdit.setFocus()
+
+    def mousePressEvent(self, event):
+        print 'Main has focus? ', self.hasFocus()
+
     def keyPressEvent(self, event):
         if self.docpath != '':
             if (event.matches(QtGui.QKeySequence.Find) or
                                             event.key() == QtCore.Qt.Key_Slash):
-                self.ui.searchDockWidget.show()
-                self.ui.searchWidget.searchLineEdit.selectAll()
-                self.ui.searchWidget.searchLineEdit.setFocus()
+                self.slot_show_search_widget()
             elif event.key() == QtCore.Qt.Key_Escape:
                 self.ui.searchDockWidget.hide()
 

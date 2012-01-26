@@ -39,6 +39,8 @@ class ImageLabel(QtGui.QLabel):
     toggle_source_trigger = QtCore.pyqtSignal()
     set_clipboard_trigger = QtCore.pyqtSignal(QtCore.QString)
     change_scale_trigger = QtCore.pyqtSignal(float)
+    show_search_trigger = QtCore.pyqtSignal()
+    hide_search_trigger = QtCore.pyqtSignal()
 
     def __init__(self, parent = None):
         super(ImageLabel, self).__init__()
@@ -118,6 +120,13 @@ class ImageLabel(QtGui.QLabel):
         elif ( event.key() == QtCore.Qt.Key_0 and
                event.modifiers() == QtCore.Qt.ControlModifier):
             self.change_scale_trigger.emit(1.0)
+
+        if self.parent.Document:
+            if (event.matches(QtGui.QKeySequence.Find) or
+                                            event.key() == QtCore.Qt.Key_Slash):
+                self.show_search_trigger.emit()
+            elif event.key() == QtCore.Qt.Key_Escape:
+                self.hide_search_trigger.emit()
 
     def mouseMoveEvent(self,  event):
         """
