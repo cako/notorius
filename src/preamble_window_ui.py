@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'preamble_editor_window.ui'
+# Form implementation generated from reading ui file 'src/preamble_window.ui'
 #
-# Created: Fri Jan 20 15:03:43 2012
+# Created: Thu Jan 26 14:33:14 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!

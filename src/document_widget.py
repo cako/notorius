@@ -117,14 +117,15 @@ class DocumentWidget(QtGui.QWidget):
             painter.fillRect(QtCore.QRect(self.Image.width() + 2, 0, 4, 6),
                              QtGui.QColor(203, 201, 200))
 
-            if self.highlights is not None:
-                for rect in self.highlights:
-                    (x, y) = self.ImgLabel.pt2px(
-                                            QtCore.QSizeF(rect.x(), rect.y()))
-                    (w, h) = self.ImgLabel.pt2px(QtCore.QSizeF(rect.width(),
-                                                               rect.height()))
-                    painter.fillRect(QtCore.QRect(x + 1, y + 1, w, h),
-                                     QtGui.QColor(255, 255, 0, 100))
+            if self.highlights:
+                for rect, pg in self.highlights:
+                    if pg == self.page:
+                        (x, y) = self.ImgLabel.pt2px(QtCore.QSizeF(rect.x(),
+                                                                   rect.y()))
+                        (w, h) = self.ImgLabel.pt2px(QtCore.QSizeF(rect.width(),
+                                                                 rect.height()))
+                        painter.fillRect(QtCore.QRect(x + 1, y + 1, w, h),
+                                         QtGui.QColor(255, 255, 0, 100))
 
             painter.end()
 

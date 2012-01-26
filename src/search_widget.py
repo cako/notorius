@@ -84,7 +84,7 @@ class SearchWidget(QtGui.QWidget):
         #print unicode(item.text(column))
         try:
             (rec, pg) = self.search_results[item]
-            self.documentWidget.highlights = [rec]
+            self.documentWidget.highlights = [[rec, pg]]
             if pg != self.documentWidget.page:
                 self.change_page_trigger.emit(pg + 1 +
                                               self.documentWidget.offset)
@@ -147,5 +147,8 @@ class SearchWidget(QtGui.QWidget):
                                                    loc.width(), loc.height()),
                                                  page]
         if first_item is not None:
-            self.searchTree.setCurrentItem(first_item)
-            self.slot_changed_index(first_item, 0)
+            #self.searchTree.setCurrentItem(first_item)
+            #self.slot_changed_index(first_item, 0)
+            self.documentWidget.highlights = [ [rec, pg] for (rec, 
+                                           pg) in self.search_results.values() ]
+            self.documentWidget.update_image()
