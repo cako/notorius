@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'window.ui'
+# Form implementation generated from reading ui file 'src/window.ui'
 #
-# Created: Fri Jan 20 15:03:14 2012
+# Created: Thu Jan 26 14:27:25 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,6 +90,7 @@ class Ui_MainWindow(object):
         self.scrollArea = QtGui.QScrollArea(self.centralwidget)
         self.scrollArea.setMinimumSize(QtCore.QSize(0, 0))
         self.scrollArea.setMouseTracking(False)
+        self.scrollArea.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.scrollArea.setAcceptDrops(True)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -123,6 +124,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2 = QtGui.QGridLayout(self.dockWidgetContents_5)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.annotationSourceTextEdit = QtGui.QTextEdit(self.dockWidgetContents_5)
+        self.annotationSourceTextEdit.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.annotationSourceTextEdit.setObjectName("annotationSourceTextEdit")
         self.gridLayout_2.addWidget(self.annotationSourceTextEdit, 1, 0, 1, 1)
         self.compileButton = QtGui.QPushButton(self.dockWidgetContents_5)
@@ -152,6 +154,7 @@ class Ui_MainWindow(object):
         self.gridLayout_4 = QtGui.QGridLayout(self.searchDockWidgetContents)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.searchWidget = QtGui.QWidget(self.searchDockWidgetContents)
+        self.searchWidget.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.searchWidget.setObjectName("searchWidget")
         self.gridLayout_4.addWidget(self.searchWidget, 0, 0, 1, 1)
         self.searchDockWidget.setWidget(self.searchDockWidgetContents)
