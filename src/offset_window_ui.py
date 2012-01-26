@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'src/offset_window.ui'
 #
-# Created: Thu Jan 26 15:16:36 2012
+# Created: Thu Jan 26 15:18:32 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
