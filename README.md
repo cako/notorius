@@ -7,7 +7,7 @@ Introduction
 Introducing notorius!
 
 ![notorius][img1]
-[img1]: http://i.imgur.com/TxHAd.png
+[img1]: http://i.imgur.com/qeYCo.png
 
 Annotating PDF files is hard. There are a few options, but none of them are good
 enough for the technically inclined. Most PDF annotators use either ASCII text
@@ -27,112 +27,29 @@ functional. You can open PDF, and Okular files, or simply import notes contained
 in an XML file on top of an already open PDF. Saving is also done through Okular
 archives or XML files.
 
-Requirements
-------------
-The requirements are below. For platform specific instructions see Installation.
-
-* [Python](http://www.python.org/download/) (versions 2.6 or 2.7)
-* [PyQt4](http://www.riverbankcomputing.co.uk/software/pyqt/download)
-* [python-poppler-qt4](http://code.google.com/p/python-poppler-qt4/)
-* [LaTeX](http://www.latex-project.org/)
-
-One of the following:
-
-* [dvipng](http://sourceforge.net/projects/dvipng/)
-* [ImageMagick](http://www.imagemagick.org/script/index.php) (necessary if you
-want to use `pdflatex` or `pslatex` (which are required for the `tikz` package,
-for example), but currently unavailable for Windows.)
-
 
 Installation
 ------------
+### Linux
+
+###### Debian-based distros
+
+Get the deb for you architecture:
+[32-bit](https://github.com/downloads/cako/notorius/notorius-0.1_i386.deb),
+[64-bit](https://github.com/downloads/cako/notorius/notorius-0.1_amd64.deb). 
+
+###### Other distros
+
+Get a TeX distribution and ImageMagick. Then download the appropriate binary:
+[32-bit](https://github.com/downloads/cako/notorius/notorius.32),
+[64-bit](https://github.com/downloads/cako/notorius/notorius.64) and run it!
+
 ### Windows
 
-This has been tested with 32-bit Windows XP, but it should work on newer
-systems.
-
-Before anything make sure you have a LaTeX distribution. A common one for
-Windows is MikTeX, download it from the following website.
-
-[`http://miktex.org/2.9/setup`](http://miktex.org/2.9/setup)
-
-Let's install Python. Download and install the following file.
-
-[`http://python.org/ftp/python/2.7.2/python-2.7.2.msi`](http://python.org/ftp/python/2.7.2/python-2.7.2.msi)
-
-Now, let's install PyQt4. Download and install the following file.
-
-[`http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe`](http://www.riverbankcomputing.co.uk/static/Downloads/PyQt4/PyQt-Py2.7-x86-gpl-4.8.6-1.exe)
-
-Finally, to  install python-poppler-qt4, download and install the following
-file.
-
-[`https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe`](https://home.in.tum.de/~lorenzph/python-poppler-qt4/python-poppler-qt4-0.16.2.win32-py2.7-pyqt-4.8.4.exe)
-
-Now run it! Don't worry about dvipng, it comes with LaTeX.
-
-    C:\Python27\pythonw.exe C:\Path\To\main.py
-
-
-### Ubuntu
-
-#### Automated
-
-For an automated installation, download and run the install script found
-[in the downloads](https://github.com/downloads/cako/notorius/install_notorius_ubuntu.sh).
-For the clueless,
-
-    chmod +x notorius_ubuntu_install.sh
-    ./notorius_ubuntu_install.sh
-
-Notorius will be in the menu under Applications>Office, but it can also be run
-from the command line with
-
-    notorius
-
-#### Manual
-
-First, you'll need a LaTeX distribution, if you don't already have one.
-
-    sudo apt-get install texlive-latex-base
-
-Second, you will need PyQt4. If you don't have it, install it with:
-
-    sudo apt-get install python-qt4
-
-Finally, you have to install `python-popper-qt4`. To build it, you will need to
-install the following libraries:
-
-    sudo apt-get install python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
-
-Then download it, unpack it, build and install:
-
-    wget http://code.google.com/p/python-poppler-qt4/downloads/detail?name=python-poppler-qt4-0.16.2.tar.gz
-    tar xvzf python-poppler-qt4-0.16.2.tar.gz
-    cd python-poppler-qt4-0.16.2/
-    python setup.py build
-    sudo python setup.py install
-
-It can also be installed with
-[`pip`](http://www.pip-installer.org/en/latest/index.html):
-
-    sudo pip install python-poppler-qt4
-
-If you want (recommended) install ImageMagick with
-
-    sudo apt-get install imagemagick
-
-After the installation, the `-dev` libraries and `g++` can be uninstalled:
-
-    sudo apt-get remove python-qt4-dev python-sip-dev libpoppler-qt4-dev g++
-    sudo apt-get autoremove
-
-
-Uninstallation
---------------
-
-Currently, only the Ubuntu script supports an automated uninstall. Download it
-from [the downloads](https://github.com/downloads/cako/notorius/uninstall_notorius_ubuntu.sh) and run it.
+Get a LaTeX distribution, for example, [MikTeX](http://miktex.org/2.9/setup).
+Download the
+[installer](https://github.com/downloads/cako/notorius/notorius0.1-setup.exe)
+and run it!
 
 License
 ------- 

@@ -20,45 +20,68 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.         #
 #                                                                              #
 #==============================================================================#
-""" Main. """
 
-import window
-import sys
-from PyQt4 import QtGui
+""" Constants. """
 
-class Application(QtGui.QApplication):
-    """ Application Class """
-    def __init__(self, argv):
-        super(QtGui.QApplication, self).__init__(argv)
-        docs = sys.argv[1:]
-        self.windows = []
-        if docs:
-            for doc in docs:
-                win = window.MainWindow(document=doc)
-                win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                    self.slot_set_clipboard)
-                win.add_windows_trigger.connect(self.slot_add_windows)
-                win.show()
-                self.windows += [win]
-        else:
-            win = window.MainWindow()
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            win.add_windows_trigger.connect(self.slot_add_windows)
-            win.show()
-            self.windows = [win]
+import getpass
+import os
+import subprocess
+from random import randint
+from platform import system as systemplat
 
-    def slot_set_clipboard(self, text):
-        """ Slot to set th clipboard to selection. """
-        clip = self.clipboard()
-        clip.setText(unicode(text).strip())
+PREAMBLE = '''\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+'''
 
-    def slot_add_windows(self, windows):
-        for win in windows:
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            self.windows.append(win)
+USERNAME = getpass.getuser()
 
-if __name__ == '__main__':
-    APP = Application(sys.argv)
-    sys.exit(APP.exec_())
+WELCOME = u'''\\begin{center}
+Hello and welcome to notorius!\\\\
+It's got $\LaTeX$ and $\int$\\vspace{-1mm}$\hbar í \\tau$!
+\end{center}'''
+
+PLATFORM = systemplat()
+if PLATFORM == 'Linux':
+    try:
+        PROC1 = subprocess.Popen(["xdpyinfo"], stdout=subprocess.PIPE)
+        PROC2 = subprocess.Popen(["grep", "dots"], stdin=PROC1.stdout,
+                                                   stdout=subprocess.PIPE)
+        OUT = PROC2.communicate()[0]
+        PROC1.stdout.close()
+        PROC2.stdout.close()
+        DPI = OUT.strip().split()[1]
+        (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
+    except OSError:
+        DPI_X = DPI_Y = 96
+else:
+    DPI_X = DPI_Y = 96
+
+
+COMPILER = 'pdflatex'
+try:
+    PROC = subprocess.Popen([COMPILER, "--version"], stdout=subprocess.PIPE)
+    PROC.stdout.close()
+except OSError:
+    COMPILER = 'latex'
+
+if PLATFORM == 'Windows':
+    COMPILER = 'latex'
+
+DIR = os.path.dirname(__file__)
+
+if PLATFORM == 'Linux' or PLATFORM == 'MacOS':
+    TMPDIR = os.getenv('TMPDIR')
+    if not TMPDIR:
+        TMPDIR = '/tmp/'
+elif PLATFORM == 'Windows':
+    TMPDIR = os.getenv('TEMP')
+    if not TMPDIR:
+        TMPDIR = DIR
+else:
+    TMPDIR = DIR
+
+TMPDIR_WHILE = TMPDIR
+while os.path.isdir(TMPDIR_WHILE):
+    TMPDIR_WHILE = os.path.join(TMPDIR, 'notorius-%s' % str(randint(0, 999)))
+TMPDIR = TMPDIR_WHILE
+os.mkdir(TMPDIR)

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+
 # -*- coding: UTF-8 -*-
 #==============================================================================#
 #                                                                              #
@@ -20,45 +20,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.         #
 #                                                                              #
 #==============================================================================#
-""" Main. """
 
-import window
-import sys
-from PyQt4 import QtGui
+""" Search Widget. """
 
-class Application(QtGui.QApplication):
-    """ Application Class """
-    def __init__(self, argv):
-        super(QtGui.QApplication, self).__init__(argv)
-        docs = sys.argv[1:]
-        self.windows = []
-        if docs:
-            for doc in docs:
-                win = window.MainWindow(document=doc)
-                win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                    self.slot_set_clipboard)
-                win.add_windows_trigger.connect(self.slot_add_windows)
-                win.show()
-                self.windows += [win]
+from PyQt4 import QtCore, QtGui
+
+class AnnotationWidget(QtGui.QWidget):
+    """
+    AnnotationWidget holds the compiled annotation.
+    """
+    def __init__(self, parent = None, ImgPixmap = None):
+        """ Initialize DocumentWidget. """
+        QtGui.QWidget.__init__(self, parent)
+        self.ImgLabel = QtGui.QLabel()
+        self.ImgLabel.setAlignment(QtCore.Qt.AlignCenter)
+        if ImgPixmap is None:
+            self.ImgPixmap = QtGui.QPixmap()
         else:
-            win = window.MainWindow()
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            win.add_windows_trigger.connect(self.slot_add_windows)
-            win.show()
-            self.windows = [win]
-
-    def slot_set_clipboard(self, text):
-        """ Slot to set th clipboard to selection. """
-        clip = self.clipboard()
-        clip.setText(unicode(text).strip())
-
-    def slot_add_windows(self, windows):
-        for win in windows:
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            self.windows.append(win)
-
-if __name__ == '__main__':
-    APP = Application(sys.argv)
-    sys.exit(APP.exec_())
+            self.ImgPixmap = ImgPixmap
+        self.ImgLabel.setPixmap(self.ImgPixmap)

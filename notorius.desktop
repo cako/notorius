@@ -6,5 +6,5 @@ Type=Application
 Categories=Office;
 Name=Notorius
 Comment=Create and edit LaTeX annotations to PDF files
-Exec=/usr/bin/notorius
+Exec=/usr/local/bin/notorius
 Icon=/usr/share/icons/notorius.png

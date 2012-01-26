@@ -20,45 +20,52 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.         #
 #                                                                              #
 #==============================================================================#
-""" Main. """
 
-import window
-import sys
-from PyQt4 import QtGui
+""" PreambleWindow. """
 
-class Application(QtGui.QApplication):
-    """ Application Class """
-    def __init__(self, argv):
-        super(QtGui.QApplication, self).__init__(argv)
-        docs = sys.argv[1:]
-        self.windows = []
-        if docs:
-            for doc in docs:
-                win = window.MainWindow(document=doc)
-                win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                    self.slot_set_clipboard)
-                win.add_windows_trigger.connect(self.slot_add_windows)
-                win.show()
-                self.windows += [win]
-        else:
-            win = window.MainWindow()
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            win.add_windows_trigger.connect(self.slot_add_windows)
-            win.show()
-            self.windows = [win]
+import os
+from PyQt4 import QtCore, QtGui
 
-    def slot_set_clipboard(self, text):
-        """ Slot to set th clipboard to selection. """
-        clip = self.clipboard()
-        clip.setText(unicode(text).strip())
+from preamble_window_ui import Ui_MainWindow
+from constants import *
 
-    def slot_add_windows(self, windows):
-        for win in windows:
-            win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
-                                                self.slot_set_clipboard)
-            self.windows.append(win)
 
-if __name__ == '__main__':
-    APP = Application(sys.argv)
-    sys.exit(APP.exec_())
+class PreambleWindow(QtGui.QMainWindow):
+    """
+    PreambleWindow allows for editing of the preamble.
+    """
+    def __init__(self, parent = None, preamble = PREAMBLE):
+        QtGui.QMainWindow.__init__(self, parent)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.parent = parent
+        self.preamble = unicode(preamble)
+        self.setStatusBar(None)
+
+        self.connect(self.ui.cancelButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_cancel)
+
+        self.connect(self.ui.saveButton, QtCore.SIGNAL("clicked()"),
+                     self.slot_save)
+
+    def slot_open(self):
+        """
+        Slot for opening PreambleWindow. It repopulates the window with the
+        saved preamble.
+        """
+        self.preamble = self.parent.preamble
+        self.ui.preambleTextEdit.setText(self.preamble)
+        self.show()
+
+    def slot_cancel(self):
+        """ Slot for cancel button. Closes window without saving. """
+        self.close()
+
+    def slot_save(self):
+        """
+        Slot for save button. It stores the value in the preamble QTextEdit
+        window.
+        """
+        self.preamble = unicode(self.ui.preambleTextEdit.toPlainText())
+        self.parent.preamble = self.preamble
+        self.close()

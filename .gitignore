@@ -1,4 +1,5 @@
 nogit/
+bin/
 tags
 .vim.custom
 *_pyuic4.py

@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>img/note16.png</file>
+    <file>img/note22.png</file>
+    <file>img/note32.png</file>
+    <file>img/note48.png</file>
+    <file>img/note64.png</file>
+</qresource>
+</RCC>           
