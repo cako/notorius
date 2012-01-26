@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'offset_window.ui'
+# Form implementation generated from reading ui file 'src/offset_window.ui'
 #
-# Created: Fri Jan 20 15:06:20 2012
+# Created: Thu Jan 26 15:00:30 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!

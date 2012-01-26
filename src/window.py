@@ -42,10 +42,12 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.1.%s' %'120126-1500'
+VERSION = '0.1.%s' %'120126-1516'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
+    def mousePressEvent(self, event):
+        print 'main has focus?', self.hasFocus()
 
     add_windows_trigger = QtCore.pyqtSignal(list)
 
@@ -624,9 +626,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.searchDockWidget.show()
         self.ui.searchWidget.searchLineEdit.selectAll()
         self.ui.searchWidget.searchLineEdit.setFocus()
-
-    def mousePressEvent(self, event):
-        print 'Main has focus? ', self.hasFocus()
 
     def keyPressEvent(self, event):
         if self.docpath != '':
