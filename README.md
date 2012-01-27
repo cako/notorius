@@ -6,9 +6,6 @@ Introduction
 
 Introducing notorius!
 
-![notorius][img1]
-[img1]: http://i.imgur.com/qeYCo.png
-
 Annotating PDF files is hard. There are a few options, but none of them are good
 enough for the technically inclined. Most PDF annotators use either ASCII text
 or free form tools.
@@ -35,8 +32,8 @@ Installation
 ###### Debian-based distros
 
 Get the deb for you architecture:
-[32-bit](https://github.com/downloads/cako/notorius/notorius-0.1_i386.deb),
-[64-bit](https://github.com/downloads/cako/notorius/notorius-0.1_amd64.deb). 
+[32-bit](https://github.com/downloads/cako/notorius/notorius-0.2_i386.deb),
+[64-bit](https://github.com/downloads/cako/notorius/notorius-0.2_amd64.deb). 
 
 ###### Other distros
 
@@ -48,8 +45,15 @@ Get a TeX distribution and ImageMagick. Then download the appropriate binary:
 
 Get a LaTeX distribution, for example, [MikTeX](http://miktex.org/2.9/setup).
 Download the
-[installer](https://github.com/downloads/cako/notorius/notorius0.1-setup.exe)
-and run it!
+[installer](https://github.com/downloads/cako/notorius/notorius0.2-setup.exe)
+and run it! You can also use the program without installing it, download the
+binary [here](https://github.com/downloads/cako/notorius/notorius.exe).
+
+Screenshot
+----------
+
+![notorius][img1]
+[img1]: http://i.imgur.com/qeYCo.png
 
 License
 ------- 
