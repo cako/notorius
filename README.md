@@ -46,7 +46,15 @@ Get a TeX distribution and ImageMagick. Then download the appropriate binary:
 Get a LaTeX distribution, for example, [MikTeX](http://miktex.org/2.9/setup).
 Download the
 [installer](https://github.com/downloads/cako/notorius/notorius0.2-setup.exe)
-and run it!
+and run it! You can also use the program without installing it, download the
+binary [here](https://github.com/downloads/cako/notorius/notorius.exe).
+
+Screenshot
+----------
+
+![notorius][img1]
+[img1]: http://i.imgur.com/qeYCo.png
+>>>>>>> ec83657dc045ac0e4f2143b9331ffd05802c20cf
 
 Screenshot
 ----------
