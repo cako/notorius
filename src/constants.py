@@ -51,6 +51,8 @@ if PLATFORM == 'Linux':
         PROC2.stdout.close()
         DPI = OUT.strip().split()[1]
         (DPI_X, DPI_Y) = [ int(dpi) for dpi in DPI.split('x') ]
+        if DPI_X >= 500 or DPI_Y >= 500:
+            DPI_X = DPI_Y = 96
     except OSError:
         DPI_X = DPI_Y = 96
 else:
