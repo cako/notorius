@@ -147,7 +147,7 @@ class ImageLabel(QtGui.QLabel):
             self.parent.update_image()
             return
         if has_note and self.find_closest(event.x(), event.y()):
-            note.generate_source()
+            note.update()
             img_path =  note.filename.rstrip('tex') + 'border.png'
             QtGui.QToolTip.showText(event.globalPos(),
                                     'Note %d: <br /> <img src="%s">'
@@ -286,8 +286,7 @@ class ImageLabel(QtGui.QLabel):
             uid = 0
         self.current_uid = uid
         self.notes[uid] = Note('New note', self.preamble, COMPILER,
-                                   self.parent.page, self.note_pos,
-                                   uid)
+                                   self.parent.page, self.note_pos, uid)
         self.parent.update_image()
 
     def slot_edit_note(self):
