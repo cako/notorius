@@ -151,8 +151,7 @@ class ImageLabel(QtGui.QLabel):
             img_path =  note.filename.rstrip('tex') + 'border.png'
             QtGui.QToolTip.showText(event.globalPos(),
                                     'Note %d: <br /> <img src="%s">'
-                                    % (note.uid, img_path),
-                                    self)
+                                    % (note.uid, img_path), self)
         if (event.x() >= x_offset) and (event.x() <= width + x_offset):
             try:
                 x1 = self.drag_position.x()
