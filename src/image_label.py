@@ -53,6 +53,10 @@ class ImageLabel(QtGui.QLabel):
         self.notes = {}
         self.move = False
         self.drag = False
+        # Weird design: If the latest 3 scroll pages are the same, change page
+        #self.scroll_pages = [ 0 for x in range(0, 5) ]
+        #self.scroll_direction = ''
+        self.overscroll = 0
         self.control = False
         self.noteImage = QtGui.QImage(':img/note22.png')
         self.rubber_band = QtGui.QRubberBand( QtGui.QRubberBand.Rectangle, self)
@@ -146,12 +150,12 @@ class ImageLabel(QtGui.QLabel):
             note.pos = self.px2pt(event.x() - x_offset, event.y())
             self.parent.update_image()
             return
-        if has_note and self.find_closest(event.x(), event.y()):
-            note.update()
-            img_path =  note.filename.rstrip('tex') + 'border.png'
-            QtGui.QToolTip.showText(event.globalPos(),
-                                    'Note %d: <br /> <img src="%s">'
-                                    % (note.uid, img_path), self)
+        #if has_note and self.find_closest(event.x(), event.y()):
+            #note.update()
+            #img_path =  note.filename.rstrip('tex') + 'border.png'
+            #QtGui.QToolTip.showText(event.globalPos(),
+                                    #'Note %d: <br /> <img src="%s">'
+                                    #% (note.uid, img_path), self)
         if (event.x() >= x_offset) and (event.x() <= width + x_offset):
             try:
                 x1 = self.drag_position.x()
@@ -184,6 +188,15 @@ class ImageLabel(QtGui.QLabel):
                 self.rubber_band.show()
                 if self.find_closest(event.x(), event.y()):
                     self.drag = True
+                    note = self.notes[self.closest_id]
+                    note.update()
+                    img_path =  note.filename.rstrip('tex') + 'border.png'
+                    #Tooltip doesn't fucking show.
+                    #self.setToolTip('Test')
+                    #PyQt4.Qt.QObject.emit(Qt.SIGNAL("MouseMove"), event)
+                    QtGui.QToolTip.showText(event.globalPos(),
+                                            'Note %d: <br /> <img src="%s">'
+                                            % (note.uid, img_path), self)
                 else:
                     self.drag = False
             else:
@@ -236,6 +249,20 @@ class ImageLabel(QtGui.QLabel):
             if (event.x() >= x_offset) and (event.x() <= width + x_offset):
                 if self.find_closest(event.x(), event.y()):
                     self.toggle_source_trigger.emit()
+
+    def wheelEvent(self, event):
+        bar = self.parent.parent.verticalScrollBar()
+        if event.delta() < 0:
+            limit, add_to_page = bar.maximum(), 1
+        else:
+            limit, add_to_page = bar.minimum(), -1
+        if bar.sliderPosition() == limit:
+            self.overscroll += 1
+            if self.overscroll > 5:
+                self.overscroll = 0
+                page = self.parent.page + 1 + add_to_page + self.parent.offset
+                self.parent.change_page(page)
+        super(ImageLabel, self).wheelEvent(event)
 
     def contextMenu(self, pos):
         """
