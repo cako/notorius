@@ -136,6 +136,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.scrollArea.setWidget(self.ui.documentWidget.ImgLabel)
         self.connect(self.ui.documentWidget.ImgLabel,
                      QtCore.SIGNAL("dropped"), self.slot_load_dropped)
+        self.ui.documentWidget.ImgLabel.change_page_trigger.connect(
+                                                self.ui.pageSpinBox.setValue)
         self.ui.documentWidget.ImgLabel.change_scale_trigger.connect(
                                                 self.ui.scaleSpinBox.setValue)
         self.ui.documentWidget.ImgLabel.show_search_trigger.connect(

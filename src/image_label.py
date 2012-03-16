@@ -39,6 +39,7 @@ class ImageLabel(QtGui.QLabel):
     toggle_source_trigger = QtCore.pyqtSignal()
     set_clipboard_trigger = QtCore.pyqtSignal(QtCore.QString)
     change_scale_trigger = QtCore.pyqtSignal(float)
+    change_page_trigger = QtCore.pyqtSignal(int)
     show_search_trigger = QtCore.pyqtSignal()
     hide_search_trigger = QtCore.pyqtSignal()
 
@@ -261,7 +262,7 @@ class ImageLabel(QtGui.QLabel):
             if self.overscroll > 5:
                 self.overscroll = 0
                 page = self.parent.page + 1 + add_to_page + self.parent.offset
-                self.parent.change_page(page)
+                self.change_page_trigger.emit(page)
         super(ImageLabel, self).wheelEvent(event)
 
     def contextMenu(self, pos):
