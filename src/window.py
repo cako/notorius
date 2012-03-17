@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.2.%s' %'120207-1905'
+VERSION = '0.2.%s' %'120317-0032'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
