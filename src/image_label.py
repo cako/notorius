@@ -115,16 +115,15 @@ class ImageLabel(QtGui.QLabel):
             event.ignore()
 
     def keyPressEvent(self, event):
-        if ( event.key() == QtCore.Qt.Key_Plus or
-             event.key() == QtCore.Qt.Key_Equal and
-             event.modifiers() == QtCore.Qt.ControlModifier):
-            self.change_scale_trigger.emit(self.parent.scale + 0.25)
-        elif ( event.key() == QtCore.Qt.Key_Minus and
-               event.modifiers() == QtCore.Qt.ControlModifier):
-            self.change_scale_trigger.emit(self.parent.scale - 0.25)
-        elif ( event.key() == QtCore.Qt.Key_0 and
-               event.modifiers() == QtCore.Qt.ControlModifier):
-            self.change_scale_trigger.emit(1.0)
+        if  event.modifiers() == QtCore.Qt.ControlModifier:
+            if ( event.key() == QtCore.Qt.Key_Plus or
+                 event.key() == QtCore.Qt.Key_Equal):
+                self.change_scale_trigger.emit(self.parent.scale + 0.25)
+            elif ( event.key() == QtCore.Qt.Key_Minus and
+                   self.parent.scale > 0.25):
+                self.change_scale_trigger.emit(self.parent.scale - 0.25)
+            elif event.key() == QtCore.Qt.Key_0:
+                self.change_scale_trigger.emit(1.0)
 
         if self.parent.Document:
             if (event.matches(QtGui.QKeySequence.Find) or
@@ -257,13 +256,20 @@ class ImageLabel(QtGui.QLabel):
             limit, add_to_page = bar.maximum(), 1
         else:
             limit, add_to_page = bar.minimum(), -1
-        if bar.sliderPosition() == limit:
-            self.overscroll += 1
-            if self.overscroll > 5:
-                self.overscroll = 0
-                page = self.parent.page + 1 + add_to_page + self.parent.offset
-                self.change_page_trigger.emit(page)
-        super(ImageLabel, self).wheelEvent(event)
+
+        if event.modifiers() == QtCore.Qt.ControlModifier:
+            if add_to_page == 1 and self.parent.scale > 0.1:
+                self.change_scale_trigger.emit(self.parent.scale - 0.1)
+            elif add_to_page == -1:
+                self.change_scale_trigger.emit(self.parent.scale + 0.1)
+        else:
+            if bar.sliderPosition() == limit:
+                self.overscroll += 1
+                if self.overscroll > 8:
+                    self.overscroll = 0
+                    page = self.parent.page + 1 + add_to_page + self.parent.offset
+                    self.change_page_trigger.emit(page)
+            super(ImageLabel, self).wheelEvent(event)
 
     def contextMenu(self, pos):
         """
