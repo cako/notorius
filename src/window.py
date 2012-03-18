@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.2.%s' %'120318-1457'
+VERSION = '0.2.%s' %'120318-1500'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -240,7 +240,7 @@ class MainWindow(QtGui.QMainWindow):
         windows = []
         for doc in files:
             win = MainWindow(document=doc)
-            windows += [win]
+            windows.append(win)
             win.show()
         self.add_windows_trigger.emit(windows)
         #print files
@@ -327,7 +327,7 @@ class MainWindow(QtGui.QMainWindow):
                         note.mdate = datetime.datetime.strptime(mdate, "%Y-%m-%dT%H:%M:%S")
                         note.update()
                     else:
-                        self.okular_notes += [ annot ]
+                        self.okular_notes.append(annot)
             return notes
         loaded = False
         if filename:
