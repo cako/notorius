@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.2.%s' %'120318-1500'
+VERSION = '0.2.%s' %'120318-1746'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -340,7 +340,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.scaleComboBox.setEnabled(True)
             #file_dir = os.path.dirname(filename)
             self.okular_notes = []
-            if filename.endswith('.zip', '.okular'):
+            if filename.endswith(('.zip', '.okular')):
                 self.rmdoc = True
                 zipf = zipfile.ZipFile(filename, 'r')
                 zipf.extractall(TMPDIR)
