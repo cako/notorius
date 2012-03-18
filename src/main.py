@@ -35,11 +35,11 @@ class Application(QtGui.QApplication):
         if docs:
             for doc in docs:
                 win = window.MainWindow(document=doc)
-                win.documentWidget.ImgLabel.set_clipboard_trigger.connect(
+                win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
                                                     self.slot_set_clipboard)
                 win.add_windows_trigger.connect(self.slot_add_windows)
                 win.show()
-                self.windows += [win]
+                self.windows.append(win)
         else:
             win = window.MainWindow()
             win.ui.documentWidget.ImgLabel.set_clipboard_trigger.connect(
