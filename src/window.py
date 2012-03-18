@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.2.%s' %'120318-1746'
+VERSION = '0.2.%s' %'120318-1806'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -58,6 +58,7 @@ class MainWindow(QtGui.QMainWindow):
         self._preamble = PREAMBLE
         self.offset = 0
         self.docpath = ''
+        self.lastpath = HOME
         self.rmdoc = False
         self.displayed_uid = -1
         self.okular_notes = []
@@ -262,16 +263,17 @@ class MainWindow(QtGui.QMainWindow):
 
     def slot_gui_open(self):
         """ Slot for actionOpen. """
-        if PLATFORM == 'Windows':
-            home = os.getenv('HOMEPATH')
-        else:
-            home = os.getenv('HOME')
-        if not home:
-            home = DIR
+        file_filter = "All supported filetypes (*.pdf *.okular *.zip *.xml);;"
+        file_filter +=  "PDF files (*.pdf);;"
+        file_filter += "Okular (*.okular);;"
+        file_filter += "ZIP archive (*.zip);;"
+        file_filter += "XML file (*.xml)"
         filename = unicode(
-                   QtGui.QFileDialog.getOpenFileName(self, 'Open file', home,
-"PDF files (*.pdf);;Okular (*.okular);;ZIP archive (*.zip);; XML file (*.xml)"))
+                   QtGui.QFileDialog.getOpenFileName(self, 'Open file',
+                                                    self.lastpath, file_filter))
+        self.lastpath = os.path.dirname(filename)
         self.load_file(filename)
+
 
     def load_file(self, filename = None):
         def parse_metadata(root):

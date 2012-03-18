@@ -72,14 +72,17 @@ if PLATFORM == 'Windows':
 DIR = os.path.dirname(__file__)
 
 if PLATFORM == 'Linux' or PLATFORM == 'MacOS':
+    HOME = os.getenv('HOME')
     TMPDIR = os.getenv('TMPDIR')
     if not TMPDIR:
         TMPDIR = '/tmp/'
 elif PLATFORM == 'Windows':
+    HOME = os.getenv('HOME')
     TMPDIR = os.getenv('TEMP')
     if not TMPDIR:
         TMPDIR = DIR
 else:
+    HOME = DIR
     TMPDIR = DIR
 
 TMPDIR_WHILE = TMPDIR
