@@ -265,11 +265,13 @@ class ImageLabel(QtGui.QLabel):
         else:
             if bar.sliderPosition() == limit:
                 self.overscroll += 1
-                if self.overscroll > 8:
+                if self.overscroll > 6:
                     self.overscroll = 0
                     page = self.parent.page + 1 + add_to_page + self.parent.offset
-                    self.change_page_trigger.emit(page)
+                    self.change_page_trigger.emit(page % self.parent.num_pages)
             super(ImageLabel, self).wheelEvent(event)
+        #if event.modifiers().testFlag(QtCore.Qt.ControlModifier):
+            #print 'zoom'
 
     def contextMenu(self, pos):
         """
