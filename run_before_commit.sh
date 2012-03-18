@@ -3,4 +3,4 @@ mv ~/Programming/python/notorius/src/window_v.py ~/Programming/python/notorius/s
 pyuic4 -o src/window_ui.py src/window.ui
 pyuic4 -o src/offset_window_ui.py src/offset_window.ui
 pyuic4 -o src/preamble_window_ui.py src/preamble_window.ui
-rm src/*.pyc
+rm -f src/*.pyc
