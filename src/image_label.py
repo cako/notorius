@@ -54,9 +54,6 @@ class ImageLabel(QtGui.QLabel):
         self.notes = {}
         self.move = False
         self.drag = False
-        # Weird design: If the latest 3 scroll pages are the same, change page
-        #self.scroll_pages = [ 0 for x in range(0, 5) ]
-        #self.scroll_direction = ''
         self.overscroll = 0
         self.control = False
         self.noteImage = QtGui.QImage(':img/note22.png')
@@ -115,22 +112,35 @@ class ImageLabel(QtGui.QLabel):
             event.ignore()
 
     def keyPressEvent(self, event):
-        if  event.modifiers() == QtCore.Qt.ControlModifier:
-            if ( event.key() == QtCore.Qt.Key_Plus or
-                 event.key() == QtCore.Qt.Key_Equal):
-                self.change_scale_trigger.emit(self.parent.scale + 0.25)
-            elif ( event.key() == QtCore.Qt.Key_Minus and
-                   self.parent.scale > 0.25):
-                self.change_scale_trigger.emit(self.parent.scale - 0.25)
-            elif event.key() == QtCore.Qt.Key_0:
-                self.change_scale_trigger.emit(1.0)
-
         if self.parent.Document:
+            if  event.modifiers() == QtCore.Qt.ControlModifier:
+                if ( event.key() == QtCore.Qt.Key_Plus or
+                     event.key() == QtCore.Qt.Key_Equal):
+                    self.change_scale_trigger.emit(self.parent.scale + 0.25)
+                elif ( event.key() == QtCore.Qt.Key_Minus and
+                       self.parent.scale > 0.25):
+                    self.change_scale_trigger.emit(self.parent.scale - 0.25)
+                elif event.key() == QtCore.Qt.Key_0:
+                    self.change_scale_trigger.emit(1.0)
+                return
+
             if (event.matches(QtGui.QKeySequence.Find) or
                                             event.key() == QtCore.Qt.Key_Slash):
                 self.show_search_trigger.emit()
             elif event.key() == QtCore.Qt.Key_Escape:
                 self.hide_search_trigger.emit()
+            elif event.key() == QtCore.Qt.Key_Left:
+                page = self.parent.page + 1 - 1 + self.parent.offset
+                self.change_page_trigger.emit(page % self.parent.num_pages)
+            elif event.key() == QtCore.Qt.Key_Right:
+                page = self.parent.page + 1 + 1 + self.parent.offset
+                self.change_page_trigger.emit(page % self.parent.num_pages)
+            elif event.key() == QtCore.Qt.Key_Down:
+                bar = self.parent.parent.verticalScrollBar()
+                bar.setValue(bar.value() + 120)
+            elif event.key() == QtCore.Qt.Key_Up:
+                bar = self.parent.parent.verticalScrollBar()
+                bar.setValue(bar.value() - 120)
 
     def mouseMoveEvent(self,  event):
         """
@@ -191,9 +201,6 @@ class ImageLabel(QtGui.QLabel):
                     note = self.notes[self.closest_id]
                     note.update()
                     img_path =  note.filename.rstrip('tex') + 'border.png'
-                    #Tooltip doesn't fucking show.
-                    #self.setToolTip('Test')
-                    #PyQt4.Qt.QObject.emit(Qt.SIGNAL("MouseMove"), event)
                     QtGui.QToolTip.showText(event.globalPos(),
                                             'Note %d: <br /> <img src="%s">'
                                             % (note.uid, img_path), self)
@@ -257,21 +264,28 @@ class ImageLabel(QtGui.QLabel):
         else:
             limit, add_to_page = bar.minimum(), -1
 
+
         if event.modifiers() == QtCore.Qt.ControlModifier:
             if add_to_page == 1 and self.parent.scale > 0.1:
                 self.change_scale_trigger.emit(self.parent.scale - 0.1)
             elif add_to_page == -1:
                 self.change_scale_trigger.emit(self.parent.scale + 0.1)
         else:
+            super(ImageLabel, self).wheelEvent(event)
             if bar.sliderPosition() == limit:
                 self.overscroll += 1
                 if self.overscroll > 6:
                     self.overscroll = 0
                     page = self.parent.page + 1 + add_to_page + self.parent.offset
                     self.change_page_trigger.emit(page % self.parent.num_pages)
-            super(ImageLabel, self).wheelEvent(event)
-        #if event.modifiers().testFlag(QtCore.Qt.ControlModifier):
-            #print 'zoom'
+                    #if add_to_page < 0:
+                        #print 'previous'
+                        #bar.setValue(2000)
+                    #if add_to_page > 0:
+                        #print 'next'
+                        #bar.setValue(0)
+            else:
+                self.overscroll = 0
 
     def contextMenu(self, pos):
         """
