@@ -29,25 +29,18 @@ Installation
 ------------
 ### Linux
 
-###### Debian-based distros
-
-Get the deb for you architecture:
-[32-bit](https://github.com/downloads/cako/notorius/notorius-0.2_i386.deb),
-[64-bit](https://github.com/downloads/cako/notorius/notorius-0.2_amd64.deb). 
-
-###### Other distros
-
 Get a TeX distribution and ImageMagick. Then download the appropriate binary:
-[32-bit](https://github.com/downloads/cako/notorius/notorius.32),
-[64-bit](https://github.com/downloads/cako/notorius/notorius.64) and run it!
+32-bit (soon),
+[64-bit](https://github.com/cako/notorius/blob/master/build/notorius.64), and run it!
 
 ### Windows
 
 Get a LaTeX distribution, for example, [MikTeX](http://miktex.org/2.9/setup).
 Download the
-[installer](https://github.com/downloads/cako/notorius/notorius0.2-setup.exe)
+[installer](https://github.com/cako/notorius/blob/master/build/notorius0.2-setup.exe)
 and run it! You can also use the program without installing it, download the
-binary [here](https://github.com/downloads/cako/notorius/notorius.exe).
+binary [here](https://github.com/cako/notorius/blob/master/build//notorius.exe).
+
 
 Screenshot
 ----------
@@ -62,10 +55,20 @@ Screenshot
 ![notorius][img1]
 [img1]: http://i.imgur.com/qeYCo.png
 
+Source
+------
+
+In order to run the program with Python instead of a binary, make sure you have
+the right dependencies first.
+These are the ``PyQt4`` and ``popplerqt4``. In Ubuntu 12.04 or later, they are
+both available through the package manager in packages ``python-qt4`` and
+``python-poppler-qt4``.
+Once this is done, ``cd`` into the ``src`` folder and run ``python main.py``.
+
 
 License
 ------- 
-Copyright 2011 Carlos Alberto da Costa Filho
+Copyright 2013 Carlos Alberto da Costa Filho
 
 This file is part of Notorius.
 

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'src/preamble_window.ui'
 #
-# Created: Sun Mar 18 18:53:35 2012
+# Created: Sat Mar 24 12:24:59 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!

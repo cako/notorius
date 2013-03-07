@@ -387,6 +387,9 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="searchDockWidget">
+   <property name="windowTitle">
+    <string>Search</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>

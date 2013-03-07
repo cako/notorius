@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'src/window.ui'
 #
-# Created: Sun Mar 18 18:53:35 2012
+# Created: Sat Mar 24 12:24:59 2012
 #      by: PyQt4 UI code generator 4.7.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -218,6 +218,7 @@ class Ui_MainWindow(object):
         self.annotationSourceDockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Welcome Note", None, QtGui.QApplication.UnicodeUTF8))
         self.compileButton.setText(QtGui.QApplication.translate("MainWindow", ">", None, QtGui.QApplication.UnicodeUTF8))
         self.annotationDockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Welcome Note", None, QtGui.QApplication.UnicodeUTF8))
+        self.searchDockWidget.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "&Open", None, QtGui.QApplication.UnicodeUTF8))
         self.actionExport.setText(QtGui.QApplication.translate("MainWindow", "&Export as", None, QtGui.QApplication.UnicodeUTF8))
         self.actionExport.setIconText(QtGui.QApplication.translate("MainWindow", "Export as", None, QtGui.QApplication.UnicodeUTF8))

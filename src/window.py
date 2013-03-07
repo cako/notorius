@@ -42,7 +42,7 @@ from icons import *
 from PyQt4 import QtCore, QtGui, QtXml
 from xml.etree import ElementTree as xml
 
-VERSION = '0.2.%s' %'120318-1853'
+VERSION = '0.2.%s' %'120324-1224'
 
 class MainWindow(QtGui.QMainWindow):
     """ Main Window Class """
@@ -537,9 +537,9 @@ class MainWindow(QtGui.QMainWindow):
             self.current_note.text = text
         self.current_note = self.ui.documentWidget.ImgLabel.notes[uid]
         self.ui.annotationSourceTextEdit.setText(self.current_note.text)
-        self.ui.annotationSourceDockWidget.setWindowTitle('Note %d'
+        self.ui.annotationSourceDockWidget.setWindowTitle('Note %d - Source'
                                                         % self.current_note.uid)
-        self.ui.annotationDockWidget.setWindowTitle('Note %d'
+        self.ui.annotationDockWidget.setWindowTitle('Note %d - LaTeX'
                                                         % self.current_note.uid)
         self.slot_force_compile()
 
