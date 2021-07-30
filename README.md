@@ -45,15 +45,7 @@ binary [here](https://github.com/cako/notorius/blob/master/build//notorius.exe).
 Screenshot
 ----------
 
-![notorius][img1]
-[img1]: http://i.imgur.com/qeYCo.png
->>>>>>> ec83657dc045ac0e4f2143b9331ffd05802c20cf
-
-Screenshot
-----------
-
-![notorius][img1]
-[img1]: http://i.imgur.com/qeYCo.png
+![img1](http://i.imgur.com/qeYCo.png)
 
 Source
 ------
